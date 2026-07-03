@@ -3,77 +3,71 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#14213d">
-    <title>Circuit Garden</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#12181f">
+    <title>Puzzle Arcade</title>
+    <link rel="stylesheet" href="home.css">
   </head>
   <body>
-    <main class="shell">
-      <section class="game-panel" aria-labelledby="game-title">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Static HTML puzzle</p>
-            <h1 id="game-title">Circuit Garden</h1>
-          </div>
-          <div class="status-pill" id="status-pill" aria-live="polite">Ready</div>
-        </header>
-
-        <div class="hud" aria-label="Game stats">
-          <div>
-            <span>Moves</span>
-            <strong id="moves">0</strong>
-          </div>
-          <div>
-            <span>Time</span>
-            <strong id="time">0:00</strong>
-          </div>
-          <div>
-            <span>Best</span>
-            <strong id="best">--</strong>
-          </div>
+    <main class="hub">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Static HTML games</p>
+          <h1>Puzzle Arcade</h1>
         </div>
+        <p class="intro">Small browser puzzles that run anywhere, with no accounts, installs, or build step.</p>
+      </header>
 
-        <div class="board-wrap">
-          <div id="board" class="board" role="grid" aria-label="Circuit puzzle board"></div>
-          <div id="win-screen" class="win-screen" hidden>
-            <div>
-              <p>Grid complete</p>
-              <strong id="win-score">0 moves</strong>
-            </div>
+      <section class="games" aria-label="Game links">
+        <a class="game-card active" href="circuit-garden/" aria-label="Play Circuit Garden">
+          <div class="preview circuit-preview" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-        </div>
+          <div class="card-copy">
+            <p class="tag">Playable / 可玩</p>
+            <h2>Circuit Garden</h2>
+            <p>Rotate tiles to connect the glowing source to every brass terminal.</p>
+            <strong>Play now</strong>
+          </div>
+        </a>
 
-        <div class="controls" aria-label="Puzzle controls">
-          <button id="new-game" class="primary" type="button">New Grid</button>
-          <button id="undo" type="button">Undo</button>
-          <button id="hint" type="button">Hint</button>
-        </div>
+        <article class="game-card locked">
+          <div class="preview number-preview" aria-hidden="true">
+            <span>4</span>
+            <span>9</span>
+            <span>1</span>
+            <span>6</span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Coming soon</p>
+            <h2>Number Loom</h2>
+            <p>Arrange number threads until every row and column balances.</p>
+            <strong>Queued</strong>
+          </div>
+        </article>
+
+        <article class="game-card locked">
+          <div class="preview word-preview" aria-hidden="true">
+            <span>G</span>
+            <span>A</span>
+            <span>M</span>
+            <span>E</span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Coming soon</p>
+            <h2>Word Lantern</h2>
+            <p>Reveal hidden words by lighting matching letter paths.</p>
+            <strong>Queued</strong>
+          </div>
+        </article>
       </section>
-
-      <aside class="side-panel" aria-label="Settings and how to play">
-        <div class="setting">
-          <label for="difficulty">Difficulty</label>
-          <select id="difficulty">
-            <option value="5">Sprout - 5 x 5</option>
-            <option value="6" selected>Grove - 6 x 6</option>
-            <option value="7">Canopy - 7 x 7</option>
-          </select>
-        </div>
-
-        <div class="rules">
-          <h2>Goal / 目标</h2>
-          <p>Rotate every tile until the glowing source reaches all brass terminals. Connected tiles light up automatically.</p>
-          <p lang="zh-Hans" class="zh">旋转每一块方格，让发光的源头连接到所有铜色终点。连通的方格会自动亮起。</p>
-        </div>
-
-        <div class="rules compact">
-          <h2>Controls / 操作</h2>
-          <p>Click or tap a tile to rotate it. Use arrow keys to move focus, Enter or Space to rotate.</p>
-          <p lang="zh-Hans" class="zh">点击或轻触方格即可旋转。使用方向键移动焦点，按 Enter 或空格键旋转。</p>
-        </div>
-      </aside>
     </main>
-
-    <script src="game.js"></script>
   </body>
 </html>
