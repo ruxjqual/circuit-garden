@@ -10,7 +10,7 @@
         color-scheme: dark;
         --ink: #fff8ec;
         --muted: #c5d0d8;
-        --panel: rgba(15, 22, 38, 0.82);
+        --panel: rgba(14, 20, 32, 0.92);
         --line: rgba(255, 248, 236, 0.16);
         --gold: #ffd166;
         --mint: #78e0b4;
@@ -26,24 +26,13 @@
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         color: var(--ink);
-        background:
-          linear-gradient(rgba(10, 15, 28, 0.18), rgba(10, 15, 28, 0.46)),
-          url("background.png") center / cover fixed,
-          linear-gradient(135deg, #15224a 0%, #255f72 38%, #5a3472 72%, #2a2048 100%);
+        background: linear-gradient(135deg, #111827 0%, #172033 54%, #211b34 100%);
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background:
-          radial-gradient(circle at 18px 18px, rgba(255, 209, 102, 0.18) 0 2px, transparent 3px),
-          radial-gradient(circle at 58px 42px, rgba(120, 224, 180, 0.14) 0 2px, transparent 3px),
-          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px);
-        background-size: 90px 90px, 96px 96px, 46px 46px, 46px 46px;
-        mask-image: linear-gradient(to bottom, black, transparent 86%);
+        content: none;
       }
 
       button {
@@ -51,14 +40,14 @@
       }
 
       .shell {
-        width: min(1180px, calc(100vw - 24px));
+        width: min(1280px, calc(100vw - 24px));
         min-height: 100vh;
         margin: 0 auto;
         padding: 24px 0;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 340px;
+        grid-template-columns: minmax(0, 1fr) 420px;
         gap: 18px;
-        align-items: center;
+        align-items: start;
       }
 
       .game,
@@ -147,7 +136,8 @@
 
       .board {
         display: grid;
-        grid-template-columns: repeat(20, 1fr);
+        grid-template-columns: repeat(20, minmax(0, 1fr));
+        grid-template-rows: repeat(20, minmax(0, 1fr));
         aspect-ratio: 1;
         border: 2px solid rgba(255, 248, 236, 0.18);
         border-radius: 8px;
@@ -161,7 +151,8 @@
 
       .cell {
         position: relative;
-        aspect-ratio: 1;
+        min-width: 0;
+        min-height: 0;
         border: 1px solid rgba(255, 248, 236, 0.055);
       }
 
@@ -183,6 +174,9 @@
         box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.14);
         cursor: grab;
         touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
       }
 
       .piece:active {
@@ -202,6 +196,14 @@
         transform: translate(-50%, -50%);
         border-radius: 5px;
         box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+      }
+
+      body.is-dragging,
+      body.is-dragging * {
+        cursor: grabbing;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
       }
 
       .controls {
@@ -258,13 +260,39 @@
         line-height: 1.55;
       }
 
+      .reference-tools {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 8px;
+      }
+
+      .tool-button {
+        min-height: 34px;
+        border: 1px solid rgba(255, 248, 236, 0.16);
+        border-radius: 8px;
+        padding: 0 10px;
+        color: var(--ink);
+        background: rgba(255, 248, 236, 0.08);
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .tool-button[aria-pressed="true"] {
+        color: #102018;
+        background: var(--mint);
+        border-color: transparent;
+      }
+
       .reference {
+        position: relative;
         width: 100%;
         margin: 8px 0 14px;
         border: 1px solid rgba(255, 248, 236, 0.16);
         border-radius: 8px;
         overflow: hidden;
         background: #07111c;
+        cursor: zoom-in;
+        touch-action: none;
       }
 
       #reference {
@@ -272,6 +300,55 @@
         width: 100%;
         aspect-ratio: 1;
         object-fit: cover;
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+      }
+
+      .magnifier-lens {
+        position: absolute;
+        z-index: 2;
+        width: 148px;
+        height: 148px;
+        border: 3px solid rgba(255, 248, 236, 0.88);
+        border-radius: 50%;
+        background-color: #07111c;
+        background-image: url("puzzle-image.png");
+        background-repeat: no-repeat;
+        box-shadow:
+          0 18px 34px rgba(0, 0, 0, 0.38),
+          inset 0 0 0 1px rgba(7, 17, 28, 0.72);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition: opacity 120ms ease;
+      }
+
+      .reference.is-magnifying .magnifier-lens {
+        opacity: 1;
+      }
+
+      .reference.is-magnifier-off {
+        cursor: default;
+      }
+
+      .piece-preview {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 14px;
+        padding: 10px;
+        border: 1px solid rgba(255, 248, 236, 0.14);
+        border-radius: 8px;
+        background: rgba(5, 10, 18, 0.38);
+      }
+
+      .piece-preview-swatch {
+        width: 96px;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        display: block;
+        background: #07111c;
+        box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.18);
       }
 
       .tray-wrap {
@@ -324,6 +401,9 @@
         .controls {
           grid-template-columns: 1fr;
         }
+        .piece-preview-swatch {
+          width: 84px;
+        }
       }
     </style>
   </head>
@@ -365,8 +445,17 @@
       <aside class="side">
         <a class="home-link" href="../">All games / 全部游戏</a>
 
+        <div class="reference-tools">
+          <button id="magnifier-toggle" class="tool-button" type="button" aria-pressed="true">Magnifier / 放大镜</button>
+        </div>
+
         <div class="reference">
-          <img id="reference" alt="Completed picture reference / 完整图片参考">
+          <img id="reference" alt="Completed picture reference / 完整图片参考" draggable="false">
+          <div id="magnifier-lens" class="magnifier-lens" aria-hidden="true"></div>
+        </div>
+
+        <div class="piece-preview" aria-label="Piece preview / 拼图预览">
+          <canvas id="piece-preview-swatch" class="piece-preview-swatch" width="160" height="160" aria-hidden="true"></canvas>
         </div>
 
         <div class="tray-wrap">
@@ -385,12 +474,18 @@
       const movesEl = document.querySelector("#moves");
       const correctEl = document.querySelector("#correct");
       const statusEl = document.querySelector("#status");
+      const previewSwatchEl = document.querySelector("#piece-preview-swatch");
+      const previewCtx = previewSwatchEl.getContext("2d");
+      const referenceWrapEl = document.querySelector(".reference");
+      const magnifierToggleEl = document.querySelector("#magnifier-toggle");
+      const magnifierLensEl = document.querySelector("#magnifier-lens");
 
       let artUrl = "puzzle-image.png";
       let boardSlots = Array(total).fill(null);
       let trayPieces = [];
       let moves = 0;
       let drag = null;
+      let magnifierEnabled = true;
 
       function drawArt(ctx, size) {
         const sky = ctx.createLinearGradient(0, 0, size, size);
@@ -524,8 +619,66 @@
         el.style.backgroundPosition = piecePosition(piece);
         el.setAttribute("role", "button");
         el.setAttribute("aria-label", `Puzzle piece ${piece + 1} / 第 ${piece + 1} 块拼图`);
+        el.setAttribute("draggable", "false");
+        el.addEventListener("pointerenter", () => showPiecePreview(piece));
+        el.addEventListener("focus", () => showPiecePreview(piece));
         el.addEventListener("pointerdown", startDrag);
+        el.addEventListener("dragstart", (event) => event.preventDefault());
         return el;
+      }
+
+      function showPiecePreview(piece) {
+        if (referenceEl.complete && referenceEl.naturalWidth > 0) {
+          const sourceSize = Math.min(referenceEl.naturalWidth, referenceEl.naturalHeight);
+          const tileSize = sourceSize / grid;
+          const x = piece % grid;
+          const y = Math.floor(piece / grid);
+          previewCtx.clearRect(0, 0, previewSwatchEl.width, previewSwatchEl.height);
+          previewCtx.imageSmoothingEnabled = true;
+          previewCtx.imageSmoothingQuality = "high";
+          previewCtx.drawImage(
+            referenceEl,
+            x * tileSize,
+            y * tileSize,
+            tileSize,
+            tileSize,
+            0,
+            0,
+            previewSwatchEl.width,
+            previewSwatchEl.height
+          );
+        }
+      }
+
+      function updateMagnifier(event) {
+        if (!magnifierEnabled) return;
+        event.preventDefault();
+
+        const rect = referenceWrapEl.getBoundingClientRect();
+        const lensSize = magnifierLensEl.offsetWidth;
+        const zoom = 4;
+        const rawX = event.clientX - rect.left;
+        const rawY = event.clientY - rect.top;
+        const x = Math.max(0, Math.min(rect.width, rawX));
+        const y = Math.max(0, Math.min(rect.height, rawY));
+
+        magnifierLensEl.style.left = `${x}px`;
+        magnifierLensEl.style.top = `${y}px`;
+        magnifierLensEl.style.backgroundImage = `url(${artUrl})`;
+        magnifierLensEl.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+        magnifierLensEl.style.backgroundPosition = `${-(x * zoom - lensSize / 2)}px ${-(y * zoom - lensSize / 2)}px`;
+        referenceWrapEl.classList.add("is-magnifying");
+      }
+
+      function hideMagnifier() {
+        referenceWrapEl.classList.remove("is-magnifying");
+      }
+
+      function setMagnifierEnabled(enabled) {
+        magnifierEnabled = enabled;
+        magnifierToggleEl.setAttribute("aria-pressed", String(enabled));
+        referenceWrapEl.classList.toggle("is-magnifier-off", !enabled);
+        if (!enabled) hideMagnifier();
       }
 
       function render() {
@@ -539,6 +692,8 @@
         });
 
         trayEl.replaceChildren(...trayPieces.map(makePiece));
+        const previewPiece = trayPieces[0] ?? boardSlots.find((piece) => piece !== null);
+        if (previewPiece !== undefined && previewPiece !== null) showPiecePreview(previewPiece);
         updateStats();
       }
 
@@ -560,10 +715,13 @@
       }
 
       function startDrag(event) {
+        event.preventDefault();
         const sourceEl = event.currentTarget;
+        sourceEl.setPointerCapture?.(event.pointerId);
         const fromCell = sourceEl.closest(".cell");
         const piece = Number(sourceEl.dataset.piece);
         const rect = sourceEl.getBoundingClientRect();
+        showPiecePreview(piece);
         drag = {
           piece,
           source: fromCell ? "board" : "tray",
@@ -576,6 +734,7 @@
         drag.ghost.style.width = `${Math.max(34, Math.min(54, rect.width))}px`;
         drag.ghost.style.height = `${Math.max(34, Math.min(54, rect.height))}px`;
         document.body.append(drag.ghost);
+        document.body.classList.add("is-dragging");
         sourceEl.classList.add("drag-source");
         moveGhost(event);
         window.addEventListener("pointermove", moveGhost);
@@ -584,12 +743,14 @@
 
       function moveGhost(event) {
         if (!drag) return;
+        event.preventDefault();
         drag.ghost.style.left = `${event.clientX}px`;
         drag.ghost.style.top = `${event.clientY}px`;
       }
 
       function finishDrag(event) {
         window.removeEventListener("pointermove", moveGhost);
+        document.body.classList.remove("is-dragging");
         document.querySelector(".drag-source")?.classList.remove("drag-source");
         drag?.ghost.remove();
         if (!drag) return;
@@ -642,6 +803,13 @@
           statusEl.textContent = "Ready / 准备";
         }, 1400);
       });
+
+      magnifierToggleEl.addEventListener("click", () => {
+        setMagnifierEnabled(!magnifierEnabled);
+      });
+      referenceWrapEl.addEventListener("pointerenter", updateMagnifier);
+      referenceWrapEl.addEventListener("pointermove", updateMagnifier);
+      referenceWrapEl.addEventListener("pointerleave", hideMagnifier);
 
       referenceEl.addEventListener("load", newPuzzle, { once: true });
       referenceEl.addEventListener("error", () => {
