@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>15 Puzzle</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #17212b;
+      color: #f6f1e7;
+      font-family: Arial, sans-serif;
+    }
+
+    main {
+      width: min(92vw, 420px);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+    }
+
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    button {
+      border: 0;
+      padding: 8px 12px;
+      background: #f6f1e7;
+      color: #17212b;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      aspect-ratio: 1;
+      padding: 6px;
+      background: #0d1319;
+      border: 2px solid #f6f1e7;
+    }
+
+    .tile {
+      border: 0;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: #d95d39;
+      color: #fffaf0;
+      font-size: 28px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    p {
+      min-height: 20px;
+      margin: 12px 0 0;
+      color: #cfd8dc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>15 Puzzle</h1>
+    <div class="bar">
+      <span id="moves">Moves: 0</span>
+      <button id="shuffle" type="button">Shuffle</button>
+    </div>
+    <div id="board" class="board" aria-label="15 Puzzle board"></div>
+    <p id="message">Slide tiles into order from 1 to 15.</p>
+  </main>
+
+  <script>
+    const board = document.getElementById("board");
+    const movesText = document.getElementById("moves");
+    const message = document.getElementById("message");
+    const shuffleButton = document.getElementById("shuffle");
+    const size = 4;
+    const solved = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0];
+    let tiles = [...solved];
+    let moves = 0;
+
+    function indexToPoint(index) {
+      return { x: index % size, y: Math.floor(index / size) };
+    }
+
+    function canMove(index) {
+      const empty = tiles.indexOf(0);
+      const a = indexToPoint(index);
+      const b = indexToPoint(empty);
+      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+    }
+
+    function isSolved() {
+      return tiles.every((tile, index) => tile === solved[index]);
+    }
+
+    function draw() {
+      board.innerHTML = "";
+
+      tiles.forEach((tile, index) => {
+        const square = document.createElement("button");
+        square.type = "button";
+        square.className = tile === 0 ? "tile empty" : "tile";
+        square.textContent = tile || "";
+        square.setAttribute("aria-label", tile === 0 ? "empty square" : `tile ${tile}`);
+        square.disabled = tile === 0;
+        square.addEventListener("click", () => move(index));
+        board.appendChild(square);
+      });
+
+      movesText.textContent = `Moves: ${moves}`;
+      message.textContent = isSolved() ? "Solved. Press Shuffle to play again." : "Slide tiles into order from 1 to 15.";
+    }
+
+    function move(index) {
+      if (!canMove(index) || isSolved()) {
+        return;
+      }
+
+      const empty = tiles.indexOf(0);
+      [tiles[index], tiles[empty]] = [tiles[empty], tiles[index]];
+      moves += 1;
+      draw();
+    }
+
+    function shuffle() {
+      tiles = [...solved];
+      moves = 0;
+
+      for (let step = 0; step < 180; step += 1) {
+        const empty = tiles.indexOf(0);
+        const choices = tiles
+          .map((tile, index) => ({ tile, index }))
+          .filter(({ tile, index }) => tile !== 0 && canMove(index));
+        const next = choices[Math.floor(Math.random() * choices.length)].index;
+        [tiles[next], tiles[empty]] = [tiles[empty], tiles[next]];
+      }
+
+      if (isSolved()) {
+        shuffle();
+        return;
+      }
+
+      draw();
+    }
+
+    shuffleButton.addEventListener("click", shuffle);
+    shuffle();
+  </script>
+</body>
+</html>

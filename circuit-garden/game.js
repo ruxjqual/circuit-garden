@@ -241,11 +241,11 @@ function render() {
     solved = true;
     stopTimer();
     saveBest();
-    statusEl.textContent = "Solved";
+    statusEl.textContent = "Solved/已完成";
     winScore.textContent = `${moves} moves in ${formatTime(elapsedSeconds())}`;
     winScreen.hidden = false;
   } else if (!complete) {
-    statusEl.textContent = "Connecting";
+    statusEl.textContent = "Connecting/进行中";
     winScreen.hidden = true;
   }
 }
