@@ -146,9 +146,16 @@ h1 {
 }
 
 .number-preview,
-.word-preview {
+.word-preview,
+.jigsaw-preview {
   grid-template-columns: repeat(2, 74px);
   gap: 10px;
+}
+
+.jigsaw-preview {
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(3, 54px);
+  gap: 4px;
 }
 
 .number-preview span,
@@ -166,6 +173,27 @@ h1 {
 
 .word-preview span {
   color: var(--blue);
+}
+
+.jigsaw-preview span {
+  width: 54px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 209, 102, 0.85), transparent 20%),
+    linear-gradient(135deg, #263b68, #246274 54%, #50345f);
+}
+
+.jigsaw-preview span:nth-child(2),
+.jigsaw-preview span:nth-child(5),
+.jigsaw-preview span:nth-child(7) {
+  transform: translateY(8px);
+}
+
+.jigsaw-preview span:nth-child(4),
+.jigsaw-preview span:nth-child(8) {
+  background:
+    linear-gradient(135deg, #142033, #78e0b4);
 }
 
 .card-copy {

@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#172033">
+    <title>20 x 20 拼图</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #fff8ec;
+        --muted: #c5d0d8;
+        --panel: rgba(15, 22, 38, 0.82);
+        --line: rgba(255, 248, 236, 0.16);
+        --gold: #ffd166;
+        --mint: #78e0b4;
+        --coral: #f28f7a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(rgba(10, 15, 28, 0.18), rgba(10, 15, 28, 0.46)),
+          url("background.png") center / cover fixed,
+          linear-gradient(135deg, #15224a 0%, #255f72 38%, #5a3472 72%, #2a2048 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 18px 18px, rgba(255, 209, 102, 0.18) 0 2px, transparent 3px),
+          radial-gradient(circle at 58px 42px, rgba(120, 224, 180, 0.14) 0 2px, transparent 3px),
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px);
+        background-size: 90px 90px, 96px 96px, 46px 46px, 46px 46px;
+        mask-image: linear-gradient(to bottom, black, transparent 86%);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 24px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 24px 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .game,
+      .side {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+        backdrop-filter: blur(18px);
+      }
+
+      .game,
+      .side {
+        padding: clamp(14px, 2.4vw, 22px);
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .eyebrow,
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .eyebrow {
+        color: var(--mint);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin-top: 4px;
+        font-size: clamp(2rem, 5vw, 4.4rem);
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      .status {
+        min-width: 104px;
+        border: 1px solid rgba(255, 209, 102, 0.42);
+        border-radius: 999px;
+        padding: 8px 12px;
+        color: var(--gold);
+        background: rgba(255, 209, 102, 0.1);
+        text-align: center;
+        font-weight: 900;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .stats div {
+        min-width: 0;
+        border: 1px solid rgba(255, 248, 236, 0.12);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: rgba(5, 10, 18, 0.45);
+      }
+
+      .stats span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .stats strong {
+        display: block;
+        margin-top: 2px;
+        font-size: 1.25rem;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(20, 1fr);
+        aspect-ratio: 1;
+        border: 2px solid rgba(255, 248, 236, 0.18);
+        border-radius: 8px;
+        overflow: hidden;
+        background:
+          linear-gradient(rgba(255, 248, 236, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 248, 236, 0.05) 1px, transparent 1px),
+          rgba(7, 17, 28, 0.84);
+        background-size: 5% 5%;
+      }
+
+      .cell {
+        position: relative;
+        aspect-ratio: 1;
+        border: 1px solid rgba(255, 248, 236, 0.055);
+      }
+
+      .cell.correct::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(120, 224, 180, 0.12);
+        pointer-events: none;
+      }
+
+      .piece {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 3px;
+        background-image: var(--art);
+        background-size: 2000% 2000%;
+        box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.14);
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .piece:active {
+        cursor: grabbing;
+      }
+
+      .piece.drag-source {
+        opacity: 0.25;
+      }
+
+      .ghost {
+        position: fixed;
+        z-index: 20;
+        width: 42px;
+        height: 42px;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        border-radius: 5px;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .controls button {
+        min-height: 44px;
+        border: 1px solid rgba(255, 248, 236, 0.14);
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(255, 248, 236, 0.08);
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .controls button:hover {
+        background: rgba(255, 248, 236, 0.15);
+      }
+
+      .primary {
+        color: #102018 !important;
+        background: var(--mint) !important;
+        border-color: transparent !important;
+      }
+
+      .home-link {
+        display: inline-flex;
+        min-height: 36px;
+        align-items: center;
+        margin-bottom: 14px;
+        color: var(--mint);
+        font-weight: 900;
+        text-decoration: none;
+      }
+
+      .home-link:hover {
+        text-decoration: underline;
+      }
+
+      h2 {
+        color: var(--gold);
+        font-size: 0.8rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .side p {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .reference {
+        width: 100%;
+        margin: 8px 0 14px;
+        border: 1px solid rgba(255, 248, 236, 0.16);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #07111c;
+      }
+
+      #reference {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+
+      .tray-wrap {
+        margin-top: 0;
+      }
+
+      .tray {
+        height: min(36vh, 320px);
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+        gap: 6px;
+        overflow: auto;
+        padding: 8px;
+        border: 1px solid rgba(255, 248, 236, 0.14);
+        border-radius: 8px;
+        background: rgba(5, 10, 18, 0.38);
+      }
+
+      .tray .piece {
+        aspect-ratio: 1;
+        min-height: 34px;
+      }
+
+      @media (max-width: 900px) {
+        .shell {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .side {
+          order: -1;
+        }
+
+        .tray {
+          height: 180px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100vw - 18px, 480px);
+          padding: 9px 0 18px;
+        }
+
+        .top {
+          flex-direction: column;
+        }
+
+        .controls {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="game" aria-labelledby="game-title">
+        <header class="top">
+          <div>
+            <p class="eyebrow">20 x 20 picture puzzle</p>
+            <h1 id="game-title">星河拼图</h1>
+          </div>
+          <div class="status" id="status" aria-live="polite">Ready / 准备</div>
+        </header>
+
+        <div class="stats" aria-label="Game stats / 游戏数据">
+          <div>
+            <span>Placed / 已放置</span>
+            <strong id="placed">0</strong>
+          </div>
+          <div>
+            <span>Moves / 步数</span>
+            <strong id="moves">0</strong>
+          </div>
+          <div>
+            <span>Correct / 正确</span>
+            <strong id="correct">0</strong>
+          </div>
+        </div>
+
+        <div id="board" class="board" aria-label="Empty 20 by 20 picture puzzle board / 空的 20 x 20 拼图棋盘"></div>
+
+        <div class="controls">
+          <button id="shuffle" class="primary" type="button">Shuffle / 洗牌</button>
+          <button id="peek" type="button">Peek / 预览</button>
+          <button id="clear" type="button">Clear / 清空</button>
+        </div>
+      </section>
+
+      <aside class="side">
+        <a class="home-link" href="../">All games / 全部游戏</a>
+
+        <div class="reference">
+          <img id="reference" alt="Completed picture reference / 完整图片参考">
+        </div>
+
+        <div class="tray-wrap">
+          <div id="tray" class="tray" aria-label="Puzzle piece tray / 拼图块托盘"></div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const grid = 20;
+      const total = grid * grid;
+      const boardEl = document.querySelector("#board");
+      const trayEl = document.querySelector("#tray");
+      const referenceEl = document.querySelector("#reference");
+      const placedEl = document.querySelector("#placed");
+      const movesEl = document.querySelector("#moves");
+      const correctEl = document.querySelector("#correct");
+      const statusEl = document.querySelector("#status");
+
+      let artUrl = "puzzle-image.png";
+      let boardSlots = Array(total).fill(null);
+      let trayPieces = [];
+      let moves = 0;
+      let drag = null;
+
+      function drawArt(ctx, size) {
+        const sky = ctx.createLinearGradient(0, 0, size, size);
+        sky.addColorStop(0, "#18284f");
+        sky.addColorStop(0.45, "#246274");
+        sky.addColorStop(1, "#50345f");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, size, size);
+
+        const glow = ctx.createRadialGradient(size * 0.22, size * 0.2, 0, size * 0.22, size * 0.2, size * 0.23);
+        glow.addColorStop(0, "rgba(255, 209, 102, 0.95)");
+        glow.addColorStop(1, "rgba(255, 209, 102, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, size, size);
+
+        ctx.fillStyle = "rgba(255, 248, 236, 0.9)";
+        for (let i = 0; i < 130; i += 1) {
+          const x = (Math.sin(i * 91.7) * 0.5 + 0.5) * size;
+          const y = (Math.cos(i * 47.3) * 0.5 + 0.5) * size * 0.72;
+          const r = 1.2 + (i % 4) * 0.55;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        drawMoon(ctx, size * 0.74, size * 0.22, size * 0.095);
+        drawMountain(ctx, size, 0.62, "#263b58");
+        drawMountain(ctx, size, 0.71, "#1d3345");
+        drawLake(ctx, size);
+        drawLanterns(ctx, size);
+        drawForeground(ctx, size);
+      }
+
+      function drawMoon(ctx, x, y, r) {
+        ctx.fillStyle = "#f7f0dc";
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#246274";
+        ctx.beginPath();
+        ctx.arc(x + r * 0.34, y - r * 0.1, r * 0.92, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawMountain(ctx, size, base, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, size * base);
+        for (let i = 0; i <= 8; i += 1) {
+          ctx.lineTo((i / 8) * size, size * (base - 0.18 - 0.08 * Math.sin(i * 1.7)));
+        }
+        ctx.lineTo(size, size);
+        ctx.lineTo(0, size);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawLake(ctx, size) {
+        const water = ctx.createLinearGradient(0, size * 0.62, 0, size);
+        water.addColorStop(0, "#24556a");
+        water.addColorStop(1, "#13263d");
+        ctx.fillStyle = water;
+        ctx.fillRect(0, size * 0.62, size, size * 0.38);
+        ctx.strokeStyle = "rgba(255, 248, 236, 0.16)";
+        ctx.lineWidth = size * 0.006;
+        for (let i = 0; i < 16; i += 1) {
+          const y = size * (0.66 + i * 0.018);
+          ctx.beginPath();
+          ctx.moveTo(size * 0.08, y);
+          ctx.bezierCurveTo(size * 0.32, y - 12, size * 0.54, y + 16, size * 0.9, y);
+          ctx.stroke();
+        }
+      }
+
+      function drawLanterns(ctx, size) {
+        for (let i = 0; i < 7; i += 1) {
+          const x = size * (0.14 + i * 0.12);
+          const y = size * (0.77 + 0.06 * Math.sin(i));
+          ctx.strokeStyle = "rgba(255, 209, 102, 0.55)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(x, y - 46);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.fillStyle = "#ffcf56";
+          ctx.beginPath();
+          ctx.ellipse(x, y, 14, 20, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function drawForeground(ctx, size) {
+        ctx.fillStyle = "#101a2a";
+        ctx.beginPath();
+        ctx.moveTo(0, size);
+        ctx.lineTo(0, size * 0.88);
+        ctx.bezierCurveTo(size * 0.22, size * 0.83, size * 0.42, size * 0.94, size * 0.62, size * 0.86);
+        ctx.bezierCurveTo(size * 0.78, size * 0.8, size * 0.9, size * 0.86, size, size * 0.82);
+        ctx.lineTo(size, size);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#78e0b4";
+        for (let i = 0; i < 18; i += 1) {
+          const x = size * (0.04 + i * 0.055);
+          const y = size * (0.91 + 0.04 * Math.sin(i * 1.2));
+          ctx.beginPath();
+          ctx.ellipse(x, y, 7, 24, -0.5 + (i % 3) * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function shuffle(list) {
+        for (let i = list.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [list[i], list[j]] = [list[j], list[i]];
+        }
+        return list;
+      }
+
+      function piecePosition(piece) {
+        const x = piece % grid;
+        const y = Math.floor(piece / grid);
+        return `${(x / (grid - 1)) * 100}% ${(y / (grid - 1)) * 100}%`;
+      }
+
+      function makePiece(piece) {
+        const el = document.createElement("div");
+        el.className = "piece";
+        el.dataset.piece = String(piece);
+        el.style.setProperty("--art", `url(${artUrl})`);
+        el.style.backgroundPosition = piecePosition(piece);
+        el.setAttribute("role", "button");
+        el.setAttribute("aria-label", `Puzzle piece ${piece + 1} / 第 ${piece + 1} 块拼图`);
+        el.addEventListener("pointerdown", startDrag);
+        return el;
+      }
+
+      function render() {
+        boardEl.replaceChildren();
+        boardSlots.forEach((piece, slot) => {
+          const cell = document.createElement("div");
+          cell.className = `cell${piece === slot ? " correct" : ""}`;
+          cell.dataset.slot = String(slot);
+          if (piece !== null) cell.append(makePiece(piece));
+          boardEl.append(cell);
+        });
+
+        trayEl.replaceChildren(...trayPieces.map(makePiece));
+        updateStats();
+      }
+
+      function updateStats() {
+        const placed = boardSlots.filter((piece) => piece !== null).length;
+        const correct = boardSlots.reduce((sum, piece, slot) => sum + (piece === slot ? 1 : 0), 0);
+        placedEl.textContent = String(placed);
+        movesEl.textContent = String(moves);
+        correctEl.textContent = String(correct);
+        if (correct === total) statusEl.textContent = "Solved / 完成";
+      }
+
+      function newPuzzle() {
+        boardSlots = Array(total).fill(null);
+        trayPieces = shuffle(Array.from({ length: total }, (_, i) => i));
+        moves = 0;
+        statusEl.textContent = "Ready / 准备";
+        render();
+      }
+
+      function startDrag(event) {
+        const sourceEl = event.currentTarget;
+        const fromCell = sourceEl.closest(".cell");
+        const piece = Number(sourceEl.dataset.piece);
+        const rect = sourceEl.getBoundingClientRect();
+        drag = {
+          piece,
+          source: fromCell ? "board" : "tray",
+          fromSlot: fromCell ? Number(fromCell.dataset.slot) : null,
+          ghost: sourceEl.cloneNode(false)
+        };
+        drag.ghost.classList.add("ghost");
+        drag.ghost.style.setProperty("--art", `url(${artUrl})`);
+        drag.ghost.style.backgroundPosition = piecePosition(piece);
+        drag.ghost.style.width = `${Math.max(34, Math.min(54, rect.width))}px`;
+        drag.ghost.style.height = `${Math.max(34, Math.min(54, rect.height))}px`;
+        document.body.append(drag.ghost);
+        sourceEl.classList.add("drag-source");
+        moveGhost(event);
+        window.addEventListener("pointermove", moveGhost);
+        window.addEventListener("pointerup", finishDrag, { once: true });
+      }
+
+      function moveGhost(event) {
+        if (!drag) return;
+        drag.ghost.style.left = `${event.clientX}px`;
+        drag.ghost.style.top = `${event.clientY}px`;
+      }
+
+      function finishDrag(event) {
+        window.removeEventListener("pointermove", moveGhost);
+        document.querySelector(".drag-source")?.classList.remove("drag-source");
+        drag?.ghost.remove();
+        if (!drag) return;
+
+        const target = document.elementFromPoint(event.clientX, event.clientY);
+        const cell = target?.closest(".cell");
+        const tray = target?.closest("#tray");
+
+        if (cell) {
+          placePiece(Number(cell.dataset.slot));
+        } else if (tray && drag.source === "board") {
+          boardSlots[drag.fromSlot] = null;
+          trayPieces.push(drag.piece);
+          moves += 1;
+          statusEl.textContent = "Removed / 已移除";
+        }
+
+        drag = null;
+        render();
+      }
+
+      function placePiece(slot) {
+        if (drag.source === "tray") {
+          trayPieces = trayPieces.filter((piece) => piece !== drag.piece);
+          if (boardSlots[slot] !== null) trayPieces.push(boardSlots[slot]);
+          boardSlots[slot] = drag.piece;
+        } else if (drag.fromSlot !== slot) {
+          const displaced = boardSlots[slot];
+          boardSlots[slot] = drag.piece;
+          boardSlots[drag.fromSlot] = displaced;
+        }
+        moves += 1;
+        statusEl.textContent = "Placed / 已放置";
+      }
+
+      document.querySelector("#shuffle").addEventListener("click", newPuzzle);
+      document.querySelector("#clear").addEventListener("click", () => {
+        trayPieces = shuffle([...trayPieces, ...boardSlots.filter((piece) => piece !== null)]);
+        boardSlots = Array(total).fill(null);
+        moves += 1;
+        statusEl.textContent = "Cleared / 已清空";
+        render();
+      });
+      document.querySelector("#peek").addEventListener("click", () => {
+        boardEl.style.backgroundImage = `url(${artUrl})`;
+        boardEl.style.backgroundSize = "cover";
+        statusEl.textContent = "Peek / 预览";
+        window.setTimeout(() => {
+          boardEl.style.backgroundImage = "";
+          statusEl.textContent = "Ready / 准备";
+        }, 1400);
+      });
+
+      referenceEl.addEventListener("load", newPuzzle, { once: true });
+      referenceEl.addEventListener("error", () => {
+        statusEl.textContent = "Image missing / 图片缺失";
+      });
+      referenceEl.src = artUrl;
+      if (referenceEl.complete) newPuzzle();
+    </script>
+  </body>
+</html>
