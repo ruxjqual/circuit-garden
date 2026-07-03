@@ -158,7 +158,7 @@ h1 {
   gap: 4px;
   background:
     linear-gradient(rgba(8, 13, 24, 0.08), rgba(8, 13, 24, 0.2)),
-    url("jigsaw-20/puzzle-image.png") center / cover;
+    url("jigsaw-20/puzzle-thumb.webp") center / cover;
 }
 
 .number-preview span,
