@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#172033">
-    <title>20 x 20 拼图</title>
+    <title>10 x 10 拼图</title>
     <style>
       :root {
         color-scheme: dark;
@@ -136,8 +136,8 @@
 
       .board {
         display: grid;
-        grid-template-columns: repeat(20, minmax(0, 1fr));
-        grid-template-rows: repeat(20, minmax(0, 1fr));
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        grid-template-rows: repeat(10, minmax(0, 1fr));
         aspect-ratio: 1;
         border: 2px solid rgba(255, 248, 236, 0.18);
         border-radius: 8px;
@@ -146,7 +146,7 @@
           linear-gradient(rgba(255, 248, 236, 0.05) 1px, transparent 1px),
           linear-gradient(90deg, rgba(255, 248, 236, 0.05) 1px, transparent 1px),
           rgba(7, 17, 28, 0.84);
-        background-size: 5% 5%;
+        background-size: 10% 10%;
       }
 
       .cell {
@@ -170,7 +170,7 @@
         border: 0;
         border-radius: 3px;
         background-image: var(--art);
-        background-size: 2000% 2000%;
+        background-size: 1000% 1000%;
         box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.14);
         cursor: grab;
         touch-action: none;
@@ -373,6 +373,29 @@
         min-height: 34px;
       }
 
+      .external-links {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 248, 236, 0.12);
+      }
+
+      .external-links h2 {
+        margin-bottom: 8px;
+      }
+
+      .external-links a {
+        display: block;
+        padding: 8px 0;
+        color: var(--ink);
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .external-links a:hover {
+        color: var(--mint);
+        text-decoration: underline;
+      }
+
       @media (max-width: 900px) {
         .shell {
           grid-template-columns: 1fr;
@@ -412,7 +435,7 @@
       <section class="game" aria-labelledby="game-title">
         <header class="top">
           <div>
-            <p class="eyebrow">20 x 20 picture puzzle</p>
+            <p class="eyebrow">10 x 10 picture puzzle</p>
             <h1 id="game-title">星河拼图</h1>
           </div>
           <div class="status" id="status" aria-live="polite">Ready / 准备</div>
@@ -433,7 +456,7 @@
           </div>
         </div>
 
-        <div id="board" class="board" aria-label="Empty 20 by 20 picture puzzle board / 空的 20 x 20 拼图棋盘"></div>
+        <div id="board" class="board" aria-label="Empty 10 by 10 picture puzzle board / 空的 10 x 10 拼图棋盘"></div>
 
         <div class="controls">
           <button id="shuffle" class="primary" type="button">Shuffle / 洗牌</button>
@@ -461,11 +484,17 @@
         <div class="tray-wrap">
           <div id="tray" class="tray" aria-label="Puzzle piece tray / 拼图块托盘"></div>
         </div>
+
+        <div class="external-links" aria-label="More jigsaw puzzle sites / 更多拼图网站">
+          <h2>More puzzles / 更多拼图</h2>
+          <a href="https://www.jigsawexplorer.com/online-jigsaw-puzzle-player.html?puzzle_id=miami-lifeguard-tower" target="_blank" rel="noopener noreferrer">Jigsaw Explorer: Miami Lifeguard Tower</a>
+          <a href="https://www.jigsawplanet.com/" target="_blank" rel="noopener noreferrer">Jigsaw Planet</a>
+        </div>
       </aside>
     </main>
 
     <script>
-      const grid = 20;
+      const grid = 10;
       const total = grid * grid;
       const boardEl = document.querySelector("#board");
       const trayEl = document.querySelector("#tray");
