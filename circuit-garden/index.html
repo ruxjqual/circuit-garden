@@ -12,10 +12,12 @@
       <section class="game-panel" aria-labelledby="game-title">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Circuit puzzle</p>
+            <a class="home" href="../" aria-label="Home / 回大厅">Home / 回大厅</a>
             <h1 id="game-title">电路板</h1>
           </div>
-          <div class="status-pill" id="status-pill" aria-live="polite">Ready</div>
+          <div class="top-actions">
+            <div class="status-pill" id="status-pill" aria-live="polite">Ready</div>
+          </div>
         </header>
 
         <div class="hud" aria-label="Game stats">
@@ -51,8 +53,6 @@
       </section>
 
       <aside class="side-panel" aria-label="Settings and how to play">
-        <a class="home-link" href="../">All games</a>
-
         <div class="setting">
           <label for="difficulty">Difficulty</label>
           <select id="difficulty">

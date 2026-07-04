@@ -101,6 +101,12 @@
         text-decoration: none;
       }
 
+      .topbar a.home {
+        min-width: 0;
+        padding: 0 12px;
+        border-radius: 0;
+      }
+
       .topbar button {
         cursor: pointer;
       }
@@ -181,6 +187,7 @@
         .topbar {
           right: 8px;
           left: 8px;
+          flex-wrap: wrap;
           justify-content: center;
           transform: none;
         }
@@ -194,7 +201,7 @@
   <body>
     <canvas id="table" aria-label="50 piece tabletop jigsaw puzzle"></canvas>
     <nav class="topbar" aria-label="Puzzle controls">
-      <a href="../" title="Home / 回大厅" aria-label="Home / 回大厅">⌂</a>
+      <a class="home" href="../" title="Home / 回大厅" aria-label="Home / 回大厅">Home / 回大厅</a>
       <div class="ref-wrap">
         <button type="button" title="Reference / 参考图" aria-label="Reference / 参考图">▧</button>
         <div class="reference" aria-hidden="true">

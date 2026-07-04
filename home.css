@@ -148,7 +148,8 @@ h1 {
 .number-preview,
 .word-preview,
 .jigsaw-preview,
-.tabletop-preview {
+.tabletop-preview,
+.time-preview {
   grid-template-columns: repeat(2, 74px);
   gap: 10px;
 }
@@ -250,6 +251,48 @@ h1 {
     radial-gradient(circle at 48% -2%, rgba(255, 255, 255, 0.88) 0 14%, transparent 15%),
     linear-gradient(135deg, #1d8c6a, #f7bf4f 48%, #e9585c);
   transform: translateY(8px) rotate(-7deg);
+}
+
+.time-preview {
+  grid-template-columns: minmax(64px, auto) minmax(92px, auto);
+  gap: 12px;
+  align-content: center;
+  background:
+    linear-gradient(135deg, rgba(255, 207, 86, 0.2), transparent 48%),
+    linear-gradient(315deg, rgba(132, 168, 255, 0.18), transparent 52%),
+    #1f2a31;
+}
+
+.time-preview span,
+.time-preview strong,
+.time-preview em {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(246, 241, 232, 0.13);
+  border-radius: 8px;
+  background: rgba(246, 241, 232, 0.08);
+}
+
+.time-preview span {
+  padding: 0 12px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.time-preview strong {
+  padding: 0 14px;
+  color: var(--gold);
+  font-size: 1.45rem;
+}
+
+.time-preview em {
+  grid-column: 1 / -1;
+  min-height: 44px;
+  color: var(--mint);
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0;
 }
 
 .card-copy {

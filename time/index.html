@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101820">
+    <title>时间与开学倒计时</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #fff8ec;
+        --muted: #b8c6c8;
+        --bg: #101820;
+        --panel: rgba(25, 35, 42, 0.82);
+        --line: rgba(255, 248, 236, 0.15);
+        --gold: #ffd166;
+        --mint: #78e0b4;
+        --blue: #84a8ff;
+        --coral: #f28f7a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% 18%, rgba(120, 224, 180, 0.18), transparent 22rem),
+          radial-gradient(circle at 82% 72%, rgba(132, 168, 255, 0.2), transparent 24rem),
+          linear-gradient(135deg, #101820, #182331 58%, #1d2130);
+      }
+
+      main {
+        width: min(1080px, calc(100vw - 28px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: clamp(18px, 5vw, 52px) 0;
+        display: grid;
+        align-content: center;
+        gap: 18px;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .home {
+        min-height: 38px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        padding: 0 12px;
+        background: rgba(255, 248, 236, 0.08);
+        text-decoration: none;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .home:hover {
+        background: rgba(255, 248, 236, 0.16);
+      }
+
+      .eyebrow,
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .eyebrow {
+        color: var(--mint);
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin-top: 4px;
+        font-size: clamp(2.6rem, 8vw, 5.8rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(16px);
+      }
+
+      .clock {
+        padding: clamp(18px, 4vw, 30px);
+      }
+
+      .clock h2 {
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .time {
+        margin-top: 8px;
+        color: var(--gold);
+        font-size: clamp(2.5rem, 8vw, 5.2rem);
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        font-weight: 950;
+      }
+
+      .date {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: clamp(1rem, 2vw, 1.2rem);
+      }
+
+      .countdown {
+        grid-column: 1 / -1;
+        padding: clamp(20px, 5vw, 36px);
+        background:
+          linear-gradient(135deg, rgba(255, 209, 102, 0.16), transparent 48%),
+          linear-gradient(315deg, rgba(242, 143, 122, 0.14), transparent 52%),
+          var(--panel);
+      }
+
+      .countdown .label {
+        color: var(--coral);
+        font-size: 0.86rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .target {
+        margin-top: 8px;
+        color: var(--muted);
+      }
+
+      .units {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .unit {
+        min-width: 0;
+        padding: 16px;
+        border: 1px solid rgba(255, 248, 236, 0.12);
+        border-radius: 8px;
+        background: rgba(255, 248, 236, 0.07);
+      }
+
+      .unit strong {
+        display: block;
+        color: var(--blue);
+        font-size: clamp(2rem, 7vw, 4.6rem);
+        line-height: 0.95;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .unit span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-weight: 850;
+      }
+
+      @media (max-width: 760px) {
+        .top,
+        .grid,
+        .units {
+          grid-template-columns: 1fr;
+        }
+
+        .top {
+          display: grid;
+        }
+
+        .home {
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <a class="home" href="../" aria-label="Home / 回大厅">Home / 回大厅</a>
+      </header>
+
+      <section class="grid" aria-label="World clocks">
+        <article class="card clock">
+          <h2>北京时间</h2>
+          <div id="beijingTime" class="time">--:--:--</div>
+          <p id="beijingDate" class="date">加载中</p>
+        </article>
+
+        <article class="card clock">
+          <h2>美西时间</h2>
+          <div id="westTime" class="time">--:--:--</div>
+          <p id="westDate" class="date">加载中</p>
+        </article>
+
+        <article class="card countdown">
+          <p class="label">School Countdown / 距离开学</p>
+          <h2 id="countdownTitle">距离 8 月 13 日开学</h2>
+          <p id="targetLabel" class="target">按美西时间计算</p>
+          <div class="units" aria-label="Countdown units">
+            <div class="unit">
+              <strong id="days">--</strong>
+              <span>天</span>
+            </div>
+            <div class="unit">
+              <strong id="hours">--</strong>
+              <span>小时</span>
+            </div>
+            <div class="unit">
+              <strong id="minutes">--</strong>
+              <span>分钟</span>
+            </div>
+            <div class="unit">
+              <strong id="seconds">--</strong>
+              <span>秒</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const zones = {
+        beijing: "Asia/Shanghai",
+        west: "America/Los_Angeles"
+      };
+
+      const timeFormatters = {
+        beijing: new Intl.DateTimeFormat("zh-CN", {
+          timeZone: zones.beijing,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        }),
+        west: new Intl.DateTimeFormat("zh-CN", {
+          timeZone: zones.west,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        })
+      };
+
+      const dateFormatters = {
+        beijing: new Intl.DateTimeFormat("zh-CN", {
+          timeZone: zones.beijing,
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        }),
+        west: new Intl.DateTimeFormat("zh-CN", {
+          timeZone: zones.west,
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })
+      };
+
+      function zoneParts(date, timeZone) {
+        const parts = new Intl.DateTimeFormat("en-CA", {
+          timeZone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          hourCycle: "h23"
+        }).formatToParts(date);
+        return Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, Number(part.value)]));
+      }
+
+      function zonedDateTimeToInstant({ year, month, day, hour = 0, minute = 0, second = 0 }, timeZone) {
+        let instant = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+        for (let i = 0; i < 3; i += 1) {
+          const parts = zoneParts(instant, timeZone);
+          const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+          const wantedUtc = Date.UTC(year, month - 1, day, hour, minute, second);
+          instant = new Date(instant.getTime() + wantedUtc - asUtc);
+        }
+        return instant;
+      }
+
+      function nextSchoolStart(now) {
+        const parts = zoneParts(now, zones.west);
+        let targetYear = parts.year;
+        const targetThisYear = zonedDateTimeToInstant({
+          year: targetYear,
+          month: 8,
+          day: 13,
+          hour: 0,
+          minute: 0,
+          second: 0
+        }, zones.west);
+
+        if (now >= targetThisYear) {
+          targetYear += 1;
+        }
+
+        return {
+          year: targetYear,
+          instant: zonedDateTimeToInstant({
+            year: targetYear,
+            month: 8,
+            day: 13,
+            hour: 0,
+            minute: 0,
+            second: 0
+          }, zones.west)
+        };
+      }
+
+      function update() {
+        const now = new Date();
+        const target = nextSchoolStart(now);
+        const remaining = Math.max(0, target.instant.getTime() - now.getTime());
+        const totalSeconds = Math.floor(remaining / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        document.getElementById("beijingTime").textContent = timeFormatters.beijing.format(now);
+        document.getElementById("beijingDate").textContent = dateFormatters.beijing.format(now);
+        document.getElementById("westTime").textContent = timeFormatters.west.format(now);
+        document.getElementById("westDate").textContent = dateFormatters.west.format(now);
+        document.getElementById("countdownTitle").textContent = `距离 ${target.year} 年 8 月 13 日开学`;
+        document.getElementById("targetLabel").textContent = `${target.year} 年 8 月 13 日 00:00，美西时间`;
+        document.getElementById("days").textContent = String(days);
+        document.getElementById("hours").textContent = String(hours).padStart(2, "0");
+        document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+        document.getElementById("seconds").textContent = String(seconds).padStart(2, "0");
+      }
+
+      update();
+      window.setInterval(update, 1000);
+    </script>
+  </body>
+</html>

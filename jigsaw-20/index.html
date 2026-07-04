@@ -72,6 +72,13 @@
         margin-bottom: 14px;
       }
 
+      .top-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
       .eyebrow,
       h1,
       h2,
@@ -103,6 +110,23 @@
         background: rgba(255, 209, 102, 0.1);
         text-align: center;
         font-weight: 900;
+      }
+
+      .home {
+        min-height: 38px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid rgba(255, 248, 236, 0.14);
+        padding: 0 12px;
+        color: var(--ink);
+        background: rgba(255, 248, 236, 0.08);
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .home:hover {
+        background: rgba(255, 248, 236, 0.15);
       }
 
       .stats {
@@ -231,20 +255,6 @@
         color: #102018 !important;
         background: var(--mint) !important;
         border-color: transparent !important;
-      }
-
-      .home-link {
-        display: inline-flex;
-        min-height: 36px;
-        align-items: center;
-        margin-bottom: 14px;
-        color: var(--mint);
-        font-weight: 900;
-        text-decoration: none;
-      }
-
-      .home-link:hover {
-        text-decoration: underline;
       }
 
       h2 {
@@ -441,7 +451,10 @@
             <p class="eyebrow">10 x 10 picture puzzle</p>
             <h1 id="game-title">星河拼图</h1>
           </div>
-          <div class="status" id="status" aria-live="polite">Ready / 准备</div>
+          <div class="top-actions">
+            <a class="home" href="../" aria-label="Home / 回大厅">Home / 回大厅</a>
+            <div class="status" id="status" aria-live="polite">Ready / 准备</div>
+          </div>
         </header>
 
         <div class="stats" aria-label="Game stats / 游戏数据">
@@ -469,8 +482,6 @@
       </section>
 
       <aside class="side">
-        <a class="home-link" href="../">All games / 全部游戏</a>
-
         <div class="reference-tools">
           <button id="magnifier-toggle" class="tool-button" type="button" aria-pressed="true">Magnifier / 放大镜</button>
         </div>

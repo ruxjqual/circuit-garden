@@ -9,7 +9,6 @@ const boardEl = document.querySelector("#board");
 const movesEl = document.querySelector("#moves");
 const timeEl = document.querySelector("#time");
 const bestEl = document.querySelector("#best");
-const statusEl = document.querySelector("#status-pill");
 const winScreen = document.querySelector("#win-screen");
 const winScore = document.querySelector("#win-score");
 const difficultyEl = document.querySelector("#difficulty");
@@ -241,11 +240,9 @@ function render() {
     solved = true;
     stopTimer();
     saveBest();
-    statusEl.textContent = "Solved/已完成";
     winScore.textContent = `${moves} moves in ${formatTime(elapsedSeconds())}`;
     winScreen.hidden = false;
   } else if (!complete) {
-    statusEl.textContent = "Connecting/进行中";
     winScreen.hidden = true;
   }
 }
@@ -296,7 +293,6 @@ function newGame() {
   solved = false;
   focusedIndex = 0;
   timeEl.textContent = "0:00";
-  statusEl.textContent = "Ready";
   winScreen.hidden = true;
   generateTree();
   updateBest();
