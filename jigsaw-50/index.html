@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#4f554b">
+    <title>50 块桌面拼图</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #fff8ec;
+        --muted: #d4d2c7;
+        --table: #5c6258;
+        --table-dark: #3e463d;
+        --panel: rgba(39, 43, 38, 0.88);
+        --line: rgba(255, 248, 236, 0.2);
+        --gold: #ffd166;
+        --mint: #78e0b4;
+        --coral: #f26f5f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% 12%, rgba(255, 209, 102, 0.18), transparent 22rem),
+          radial-gradient(circle at 82% 78%, rgba(120, 224, 180, 0.16), transparent 23rem),
+          linear-gradient(135deg, var(--table), var(--table-dark));
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.42;
+        background-image:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 36px 36px;
+        mix-blend-mode: soft-light;
+      }
+
+      canvas {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        cursor: grab;
+      }
+
+      canvas.dragging {
+        cursor: grabbing;
+      }
+
+      .topbar {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+        transform: translateX(-50%);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar a,
+      .topbar button,
+      .readout {
+        min-width: 44px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 248, 236, 0.14);
+        border-radius: 6px;
+        color: var(--ink);
+        background: rgba(255, 248, 236, 0.08);
+        font: inherit;
+        font-weight: 850;
+        text-decoration: none;
+      }
+
+      .topbar button {
+        cursor: pointer;
+      }
+
+      .topbar a:hover,
+      .topbar button:hover,
+      .topbar button:focus-visible {
+        outline: none;
+        border-color: rgba(255, 209, 102, 0.76);
+        background: rgba(255, 209, 102, 0.16);
+      }
+
+      .readout {
+        min-width: 76px;
+        padding: 0 12px;
+        color: var(--gold);
+      }
+
+      .ref-wrap {
+        position: relative;
+      }
+
+      .reference {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        width: min(420px, 72vw);
+        padding: 10px;
+        border: 1px solid rgba(255, 248, 236, 0.24);
+        border-radius: 8px;
+        background: rgba(35, 38, 34, 0.95);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 8px);
+        transition: opacity 150ms ease, transform 150ms ease;
+      }
+
+      .ref-wrap:hover .reference,
+      .ref-wrap:focus-within .reference {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .reference img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 2 / 1;
+        object-fit: cover;
+        border-radius: 5px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 5;
+        max-width: min(520px, calc(100vw - 28px));
+        padding: 11px 14px;
+        border: 1px solid rgba(120, 224, 180, 0.46);
+        border-radius: 8px;
+        color: var(--mint);
+        background: rgba(25, 30, 26, 0.92);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+        font-weight: 850;
+        opacity: 0;
+        transform: translate(-50%, 12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          right: 8px;
+          left: 8px;
+          justify-content: center;
+          transform: none;
+        }
+
+        .readout {
+          min-width: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="table" aria-label="50 piece tabletop jigsaw puzzle"></canvas>
+    <nav class="topbar" aria-label="Puzzle controls">
+      <a href="../" title="Home / 回大厅" aria-label="Home / 回大厅">⌂</a>
+      <div class="ref-wrap">
+        <button type="button" title="Reference / 参考图" aria-label="Reference / 参考图">▧</button>
+        <div class="reference" aria-hidden="true">
+          <!-- <img src="generated-landscape.png" alt=""> -->
+          <img src="photo-safe.jpg" alt="">
+        </div>
+      </div>
+      <button id="shuffleBtn" type="button" title="Shuffle / 打乱" aria-label="Shuffle / 打乱">↻</button>
+      <button id="resetBtn" type="button" title="Reset / 重来" aria-label="Reset / 重来">×</button>
+      <div id="timer" class="readout" aria-live="polite">0:00</div>
+      <div id="score" class="readout" aria-live="polite">0/50</div>
+    </nav>
+    <div id="toast" class="toast" role="status" aria-live="polite">完成了！Great job.</div>
+
+    <script>
+      const COLS = 10;
+      const ROWS = 5;
+      const COUNT = COLS * ROWS;
+      const SNAP_RATIO = 0.42;
+
+      const canvas = document.getElementById("table");
+      const ctx = canvas.getContext("2d");
+      const timerEl = document.getElementById("timer");
+      const scoreEl = document.getElementById("score");
+      const toast = document.getElementById("toast");
+      const shuffleBtn = document.getElementById("shuffleBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const image = new Image();
+      // image.src = "generated-landscape.png";
+      image.src = "photo-safe.jpg";
+
+      const state = {
+        dpr: 1,
+        width: 0,
+        height: 0,
+        board: { x: 0, y: 0, w: 0, h: 0 },
+        pieceW: 0,
+        pieceH: 0,
+        tab: 0,
+        pieces: [],
+        drag: null,
+        startedAt: Date.now(),
+        complete: false
+      };
+
+      function formatTime(ms) {
+        const total = Math.floor(ms / 1000);
+        const minutes = Math.floor(total / 60);
+        const seconds = String(total % 60).padStart(2, "0");
+        return `${minutes}:${seconds}`;
+      }
+
+      function rand(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function sourceFrame() {
+        const targetRatio = COLS / ROWS;
+        const imageRatio = image.naturalWidth / image.naturalHeight;
+        if (imageRatio > targetRatio) {
+          const width = image.naturalHeight * targetRatio;
+          return {
+            x: (image.naturalWidth - width) / 2,
+            y: 0,
+            w: width,
+            h: image.naturalHeight
+          };
+        }
+        const height = image.naturalWidth / targetRatio;
+        return {
+          x: 0,
+          y: (image.naturalHeight - height) / 2,
+          w: image.naturalWidth,
+          h: height
+        };
+      }
+
+      function edgeFor(row, col, side) {
+        if (side === "top" && row === 0) return 0;
+        if (side === "right" && col === COLS - 1) return 0;
+        if (side === "bottom" && row === ROWS - 1) return 0;
+        if (side === "left" && col === 0) return 0;
+        const seed = row * 37 + col * 19 + side.length * 11;
+        return seed % 2 === 0 ? 1 : -1;
+      }
+
+      function makeShape(piece, ox = 0, oy = 0) {
+        const w = state.pieceW;
+        const h = state.pieceH;
+        const t = state.tab;
+        const p = new Path2D();
+        p.moveTo(ox, oy);
+        drawEdge(p, ox, oy, ox + w, oy, piece.top, "h", t);
+        drawEdge(p, ox + w, oy, ox + w, oy + h, piece.right, "v", t);
+        drawEdge(p, ox + w, oy + h, ox, oy + h, piece.bottom, "h", -t);
+        drawEdge(p, ox, oy + h, ox, oy, piece.left, "v", -t);
+        p.closePath();
+        return p;
+      }
+
+      function drawEdge(path, x1, y1, x2, y2, tab, axis, depth) {
+        if (!tab) {
+          path.lineTo(x2, y2);
+          return;
+        }
+        const sign = tab;
+        if (axis === "h") {
+          const dx = x2 - x1;
+          const dir = Math.sign(dx);
+          const notch = Math.abs(dx) * 0.2;
+          const mid = x1 + dx / 2;
+          path.lineTo(mid - dir * notch, y1);
+          path.bezierCurveTo(mid - dir * notch * 0.82, y1 + depth * sign, mid - dir * notch * 0.24, y1 + depth * sign, mid, y1 + depth * sign);
+          path.bezierCurveTo(mid + dir * notch * 0.24, y1 + depth * sign, mid + dir * notch * 0.82, y1 + depth * sign, mid + dir * notch, y1);
+          path.lineTo(x2, y2);
+        } else {
+          const dy = y2 - y1;
+          const dir = Math.sign(dy);
+          const notch = Math.abs(dy) * 0.2;
+          const mid = y1 + dy / 2;
+          path.lineTo(x1, mid - dir * notch);
+          path.bezierCurveTo(x1 - depth * sign, mid - dir * notch * 0.82, x1 - depth * sign, mid - dir * notch * 0.24, x1 - depth * sign, mid);
+          path.bezierCurveTo(x1 - depth * sign, mid + dir * notch * 0.24, x1 - depth * sign, mid + dir * notch * 0.82, x1, mid + dir * notch);
+          path.lineTo(x2, y2);
+        }
+      }
+
+      function createPieces() {
+        const pieces = [];
+        for (let row = 0; row < ROWS; row += 1) {
+          for (let col = 0; col < COLS; col += 1) {
+            pieces.push({
+              id: row * COLS + col,
+              row,
+              col,
+              top: edgeFor(row, col, "top"),
+              right: edgeFor(row, col, "right"),
+              bottom: row === ROWS - 1 ? 0 : -edgeFor(row + 1, col, "top"),
+              left: col === 0 ? 0 : -edgeFor(row, col - 1, "right"),
+              x: 0,
+              y: 0,
+              targetX: 0,
+              targetY: 0,
+              placed: false,
+              groupId: row * COLS + col,
+              angle: 0,
+              z: row * COLS + col
+            });
+          }
+        }
+        state.pieces = pieces;
+      }
+
+      function resize() {
+        state.dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        state.width = window.innerWidth;
+        state.height = window.innerHeight;
+        canvas.width = Math.floor(state.width * state.dpr);
+        canvas.height = Math.floor(state.height * state.dpr);
+        canvas.style.width = `${state.width}px`;
+        canvas.style.height = `${state.height}px`;
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+
+        const toolbarSpace = state.width < 720 ? 92 : 76;
+        const boardW = Math.min(state.width * 0.42, (state.height - toolbarSpace - 150) * 1.9);
+        const boardH = boardW / 2;
+        const maxBoardH = state.height - toolbarSpace - 82;
+        state.board.h = Math.min(boardH, maxBoardH);
+        state.board.w = state.board.h * 2;
+        state.board.x = (state.width - state.board.w) / 2;
+        state.board.y = toolbarSpace + (state.height - toolbarSpace - state.board.h) / 2;
+        state.pieceW = state.board.w / COLS;
+        state.pieceH = state.board.h / ROWS;
+        state.tab = Math.min(state.pieceW, state.pieceH) * 0.22;
+
+        state.pieces.forEach((piece) => {
+          piece.targetX = state.board.x + piece.col * state.pieceW;
+          piece.targetY = state.board.y + piece.row * state.pieceH;
+          if (piece.placed) {
+            piece.x = piece.targetX;
+            piece.y = piece.targetY;
+            piece.angle = 0;
+          }
+        });
+        draw();
+      }
+
+      function scatterPieces() {
+        const margin = state.tab + 14;
+        const topY = 78 + margin;
+        const bottomY = state.height - state.pieceH - margin;
+        const visualW = state.pieceW + state.tab * 2;
+        const visualH = state.pieceH + state.tab * 2;
+        const spacingPasses = [16, 10, 5, 0, -4, -8];
+        const gapPasses = [0.62, 0.36, 0.18, 0];
+        let candidates = [];
+
+        for (const extra of spacingPasses) {
+          for (const gapRatio of gapPasses) {
+            const trial = [];
+            const cellW = Math.max(state.pieceW + 2, visualW + extra);
+            const cellH = Math.max(state.pieceH + 2, visualH + extra);
+            const boardGap = Math.max(0, Math.min(state.pieceW, state.pieceH) * gapRatio);
+            const cols = Math.max(1, Math.floor((state.width - margin * 2) / cellW));
+            const rows = Math.max(1, Math.floor((bottomY - topY + state.pieceH) / cellH));
+            const xStep = cols <= 1 ? 0 : (state.width - margin * 2 - state.pieceW) / (cols - 1);
+            const yStep = rows <= 1 ? 0 : (bottomY - topY) / (rows - 1);
+
+            for (let row = 0; row < rows; row += 1) {
+              for (let col = 0; col < cols; col += 1) {
+                const x = margin + col * xStep;
+                const y = topY + row * yStep;
+                const overlapsBoard =
+                  x < state.board.x + state.board.w + boardGap &&
+                  x + state.pieceW > state.board.x - boardGap &&
+                  y < state.board.y + state.board.h + boardGap &&
+                  y + state.pieceH > state.board.y - boardGap;
+                if (!overlapsBoard) {
+                  const centerX = x + state.pieceW / 2;
+                  const centerY = y + state.pieceH / 2;
+                  const edgeScore = Math.min(centerX, state.width - centerX, centerY, state.height - centerY);
+                  trial.push({ x, y, edgeScore });
+                }
+              }
+            }
+
+            candidates = trial;
+            if (candidates.length >= COUNT) break;
+          }
+          if (candidates.length >= COUNT) break;
+        }
+
+        const slots = candidates
+          .sort((a, b) => a.edgeScore - b.edgeScore || Math.random() - 0.5)
+          .slice(0, COUNT)
+          .sort(() => Math.random() - 0.5);
+
+        state.pieces.forEach((piece, index) => {
+          piece.placed = false;
+          piece.groupId = piece.id;
+          piece.angle = 0;
+          piece.z = index;
+          const slot = slots[index] || {
+            x: margin + (index % 10) * (state.pieceW + 4),
+            y: topY + Math.floor(index / 10) * (state.pieceH + 4)
+          };
+          piece.x = Math.max(margin, Math.min(state.width - state.pieceW - margin, slot.x));
+          piece.y = Math.max(topY, Math.min(bottomY, slot.y));
+        });
+        window.__debugPuzzleState = {
+          board: state.board,
+          pieceW: state.pieceW,
+          pieceH: state.pieceH,
+          slotCount: slots.length,
+          candidateCount: candidates.length
+        };
+        state.startedAt = Date.now();
+        state.complete = false;
+        updateHud();
+        draw();
+      }
+
+      function drawBoard() {
+        const b = state.board;
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = "#fff8ec";
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = "rgba(255, 248, 236, 0.5)";
+        ctx.setLineDash([8, 8]);
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.22;
+        for (let col = 1; col < COLS; col += 1) {
+          const x = b.x + col * state.pieceW;
+          ctx.beginPath();
+          ctx.moveTo(x, b.y);
+          ctx.lineTo(x, b.y + b.h);
+          ctx.stroke();
+        }
+        for (let row = 1; row < ROWS; row += 1) {
+          const y = b.y + row * state.pieceH;
+          ctx.beginPath();
+          ctx.moveTo(b.x, y);
+          ctx.lineTo(b.x + b.w, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawPiece(piece) {
+        const bleed = state.tab + 3;
+        const shape = makeShape(piece, 0, 0);
+        const frame = sourceFrame();
+        const sourceW = frame.w / COLS;
+        const sourceH = frame.h / ROWS;
+        const bleedX = sourceW * 0.32;
+        const bleedY = sourceH * 0.32;
+        const sx = Math.max(frame.x, frame.x + piece.col * sourceW - bleedX);
+        const sy = Math.max(frame.y, frame.y + piece.row * sourceH - bleedY);
+        const sx2 = Math.min(frame.x + frame.w, frame.x + (piece.col + 1) * sourceW + bleedX);
+        const sy2 = Math.min(frame.y + frame.h, frame.y + (piece.row + 1) * sourceH + bleedY);
+        const trimLeft = piece.col === 0 ? 0 : bleed;
+        const trimTop = piece.row === 0 ? 0 : bleed;
+        const trimRight = piece.col === COLS - 1 ? 0 : bleed;
+        const trimBottom = piece.row === ROWS - 1 ? 0 : bleed;
+        ctx.save();
+        ctx.translate(piece.x + state.pieceW / 2, piece.y + state.pieceH / 2);
+        ctx.rotate(piece.placed ? 0 : piece.angle);
+        ctx.translate(-state.pieceW / 2, -state.pieceH / 2);
+        ctx.shadowColor = "rgba(0, 0, 0, 0.38)";
+        ctx.shadowBlur = piece.placed ? 7 : 14;
+        ctx.shadowOffsetY = piece.placed ? 4 : 10;
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.fill(shape);
+        ctx.shadowColor = "transparent";
+        ctx.save();
+        ctx.clip(shape);
+        ctx.drawImage(
+          image,
+          sx,
+          sy,
+          sx2 - sx,
+          sy2 - sy,
+          -trimLeft,
+          -trimTop,
+          state.pieceW + trimLeft + trimRight,
+          state.pieceH + trimTop + trimBottom
+        );
+        ctx.restore();
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.lineWidth = Math.max(2.2, state.pieceW * 0.05);
+        ctx.strokeStyle = "rgba(12, 18, 16, 0.82)";
+        ctx.stroke(shape);
+        ctx.lineWidth = Math.max(1.2, state.pieceW * 0.026);
+        ctx.strokeStyle = "rgba(255, 255, 245, 0.76)";
+        ctx.stroke(shape);
+        ctx.lineWidth = Math.max(0.8, state.pieceW * 0.012);
+        ctx.strokeStyle = "rgba(20, 28, 24, 0.5)";
+        ctx.stroke(shape);
+        ctx.restore();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, state.width, state.height);
+        drawBoard();
+        state.pieces
+          .slice()
+          .sort((a, b) => a.z - b.z)
+          .forEach(drawPiece);
+      }
+
+      function pointInPiece(piece, x, y) {
+        const cx = piece.x + state.pieceW / 2;
+        const cy = piece.y + state.pieceH / 2;
+        const angle = piece.placed ? 0 : piece.angle;
+        const cos = Math.cos(-angle);
+        const sin = Math.sin(-angle);
+        const lx = (x - cx) * cos - (y - cy) * sin + state.pieceW / 2;
+        const ly = (x - cx) * sin + (y - cy) * cos + state.pieceH / 2;
+        const pad = state.tab + 3;
+        if (lx < -pad || lx > state.pieceW + pad || ly < -pad || ly > state.pieceH + pad) {
+          return false;
+        }
+        const shape = makeShape(piece, 0, 0);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        const hit = ctx.isPointInPath(shape, lx, ly);
+        ctx.restore();
+        return hit;
+      }
+
+      function findPiece(x, y) {
+        return state.pieces
+          .slice()
+          .sort((a, b) => b.z - a.z)
+          .find((piece) => pointInPiece(piece, x, y));
+      }
+
+      function groupPieces(groupId) {
+        return state.pieces.filter((piece) => piece.groupId === groupId);
+      }
+
+      function pieceAt(row, col) {
+        return state.pieces.find((piece) => piece.row === row && piece.col === col);
+      }
+
+      function adjacentMatches(piece) {
+        return [
+          { piece: pieceAt(piece.row - 1, piece.col), dx: 0, dy: -state.pieceH },
+          { piece: pieceAt(piece.row + 1, piece.col), dx: 0, dy: state.pieceH },
+          { piece: pieceAt(piece.row, piece.col - 1), dx: -state.pieceW, dy: 0 },
+          { piece: pieceAt(piece.row, piece.col + 1), dx: state.pieceW, dy: 0 }
+        ].filter((match) => match.piece);
+      }
+
+      function mergeGroups(targetGroupId, sourceGroupId) {
+        if (targetGroupId === sourceGroupId) return targetGroupId;
+        state.pieces.forEach((piece) => {
+          if (piece.groupId === sourceGroupId) {
+            piece.groupId = targetGroupId;
+          }
+        });
+        return targetGroupId;
+      }
+
+      function connectPlacedNeighbors(groupId) {
+        let changed = true;
+        let mergedGroupId = groupId;
+        while (changed) {
+          changed = false;
+          const members = groupPieces(mergedGroupId);
+          members.forEach((piece) => {
+            adjacentMatches(piece).forEach(({ piece: neighbor }) => {
+              if (neighbor && neighbor.placed && neighbor.groupId !== mergedGroupId) {
+                mergedGroupId = mergeGroups(mergedGroupId, neighbor.groupId);
+                changed = true;
+              }
+            });
+          });
+        }
+        return mergedGroupId;
+      }
+
+      function syncGroupPlacement(groupId, threshold) {
+        const members = groupPieces(groupId);
+        const isNearBoard = members.every((piece) => Math.hypot(piece.x - piece.targetX, piece.y - piece.targetY) < threshold);
+        if (isNearBoard && members.length) {
+          const dx = members[0].targetX - members[0].x;
+          const dy = members[0].targetY - members[0].y;
+          members.forEach((piece) => {
+            piece.x += dx;
+            piece.y += dy;
+            piece.angle = 0;
+            piece.placed = true;
+          });
+        } else {
+          members.forEach((piece) => {
+            piece.placed = false;
+          });
+        }
+      }
+
+      function snapGroupToNeighbor(groupId, threshold) {
+        let mergedGroupId = groupId;
+        let changed = true;
+        while (changed) {
+          changed = false;
+          let best = null;
+          const members = groupPieces(mergedGroupId);
+
+          members.forEach((piece) => {
+            adjacentMatches(piece).forEach((match) => {
+              const neighbor = match.piece;
+              if (neighbor.groupId === mergedGroupId) return;
+              const desiredX = neighbor.x - match.dx;
+              const desiredY = neighbor.y - match.dy;
+              const dx = desiredX - piece.x;
+              const dy = desiredY - piece.y;
+              const distance = Math.hypot(dx, dy);
+              if (distance < threshold && (!best || distance < best.distance)) {
+                best = {
+                  dx,
+                  dy,
+                  distance,
+                  neighborGroupId: neighbor.groupId
+                };
+              }
+            });
+          });
+
+          if (best) {
+            members.forEach((piece) => {
+              piece.x += best.dx;
+              piece.y += best.dy;
+              piece.angle = 0;
+            });
+            mergedGroupId = mergeGroups(mergedGroupId, best.neighborGroupId);
+            changed = true;
+          }
+        }
+
+        syncGroupPlacement(mergedGroupId, threshold);
+        return mergedGroupId !== groupId || groupPieces(mergedGroupId).length > 1;
+      }
+
+      function bringGroupToFront(members) {
+        let nextZ = Math.max(...state.pieces.map((item) => item.z)) + 1;
+        members
+          .slice()
+          .sort((a, b) => a.z - b.z)
+          .forEach((piece) => {
+            piece.z = nextZ;
+            nextZ += 1;
+          });
+      }
+
+      function pointerPosition(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+      }
+
+      function onPointerDown(event) {
+        const pos = pointerPosition(event);
+        const piece = findPiece(pos.x, pos.y);
+        if (!piece) return;
+        event.preventDefault();
+        const members = groupPieces(piece.groupId);
+        bringGroupToFront(members);
+        state.drag = {
+          piece,
+          members: members.map((member) => ({
+            piece: member,
+            dx: pos.x - member.x,
+            dy: pos.y - member.y
+          }))
+        };
+        canvas.classList.add("dragging");
+        canvas.setPointerCapture(event.pointerId);
+        draw();
+      }
+
+      function onPointerMove(event) {
+        if (!state.drag) return;
+        event.preventDefault();
+        const pos = pointerPosition(event);
+        state.drag.members.forEach((member) => {
+          member.piece.x = pos.x - member.dx;
+          member.piece.y = pos.y - member.dy;
+          member.piece.placed = false;
+        });
+        draw();
+      }
+
+      function onPointerUp(event) {
+        if (!state.drag) return;
+        const members = state.drag.members.map((member) => member.piece);
+        const anchor = state.drag.piece;
+        const threshold = Math.min(state.pieceW, state.pieceH) * SNAP_RATIO;
+        const distance = Math.hypot(anchor.x - anchor.targetX, anchor.y - anchor.targetY);
+        if (distance < threshold) {
+          const dx = anchor.targetX - anchor.x;
+          const dy = anchor.targetY - anchor.y;
+          members.forEach((piece) => {
+            piece.x += dx;
+            piece.y += dy;
+            piece.angle = 0;
+            piece.placed = true;
+          });
+          connectPlacedNeighbors(anchor.groupId);
+        } else {
+          snapGroupToNeighbor(anchor.groupId, threshold);
+        }
+        state.drag = null;
+        canvas.classList.remove("dragging");
+        try {
+          canvas.releasePointerCapture(event.pointerId);
+        } catch (error) {
+          // Pointer may already be released by the browser.
+        }
+        updateHud();
+        draw();
+      }
+
+      function updateHud() {
+        const placed = state.pieces.filter((piece) => piece.placed).length;
+        scoreEl.textContent = `${placed}/${COUNT}`;
+        if (placed === COUNT && !state.complete) {
+          state.complete = true;
+          toast.classList.add("show");
+          window.setTimeout(() => toast.classList.remove("show"), 3600);
+        }
+      }
+
+      function resetGame() {
+        scatterPieces();
+        toast.classList.remove("show");
+      }
+
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointercancel", onPointerUp);
+      shuffleBtn.addEventListener("click", resetGame);
+      resetBtn.addEventListener("click", resetGame);
+      window.addEventListener("resize", resize);
+
+      window.setInterval(() => {
+        if (!state.complete) {
+          timerEl.textContent = formatTime(Date.now() - state.startedAt);
+        }
+      }, 1000);
+
+      image.addEventListener("load", () => {
+        createPieces();
+        resize();
+        scatterPieces();
+      });
+    </script>
+  </body>
+</html>

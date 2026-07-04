@@ -74,7 +74,7 @@ h1 {
 
 .games {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
 }
 
@@ -147,7 +147,8 @@ h1 {
 
 .number-preview,
 .word-preview,
-.jigsaw-preview {
+.jigsaw-preview,
+.tabletop-preview {
   grid-template-columns: repeat(2, 74px);
   gap: 10px;
 }
@@ -197,6 +198,58 @@ h1 {
 .jigsaw-preview span:nth-child(4),
 .jigsaw-preview span:nth-child(8) {
   background: linear-gradient(rgba(120, 224, 180, 0.22), rgba(255, 248, 236, 0.04));
+}
+
+.tabletop-preview {
+  position: relative;
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(2, 54px);
+  gap: 18px 14px;
+  background:
+    radial-gradient(circle at 24% 34%, rgba(255, 209, 102, 0.24), transparent 17rem),
+    radial-gradient(circle at 74% 62%, rgba(132, 168, 255, 0.24), transparent 16rem),
+    linear-gradient(135deg, #5b6258, #28332f);
+}
+
+.tabletop-preview::before {
+  content: "";
+  position: absolute;
+  width: 128px;
+  height: 72px;
+  border: 1px dashed rgba(255, 248, 236, 0.38);
+  border-radius: 4px;
+  background: rgba(10, 15, 18, 0.18);
+}
+
+.tabletop-preview span {
+  position: relative;
+  z-index: 1;
+  width: 54px;
+  aspect-ratio: 1;
+  border-radius: 13px 7px 12px 6px;
+  background:
+    radial-gradient(circle at 84% 48%, rgba(255, 255, 255, 0.92) 0 13%, transparent 14%),
+    radial-gradient(circle at 48% -2%, rgba(255, 255, 255, 0.9) 0 14%, transparent 15%),
+    linear-gradient(135deg, #f1564d, #ffd166 44%, #3aa3ff);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.26), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.tabletop-preview span:nth-child(2),
+.tabletop-preview span:nth-child(5) {
+  background:
+    radial-gradient(circle at 84% 48%, rgba(255, 255, 255, 0.9) 0 13%, transparent 14%),
+    radial-gradient(circle at 48% -2%, rgba(255, 255, 255, 0.88) 0 14%, transparent 15%),
+    linear-gradient(135deg, #176dbe, #57d0e8 45%, #f5efe0);
+  transform: translateY(-8px) rotate(5deg);
+}
+
+.tabletop-preview span:nth-child(3),
+.tabletop-preview span:nth-child(6) {
+  background:
+    radial-gradient(circle at 84% 48%, rgba(255, 255, 255, 0.9) 0 13%, transparent 14%),
+    radial-gradient(circle at 48% -2%, rgba(255, 255, 255, 0.88) 0 14%, transparent 15%),
+    linear-gradient(135deg, #1d8c6a, #f7bf4f 48%, #e9585c);
+  transform: translateY(8px) rotate(-7deg);
 }
 
 .card-copy {
