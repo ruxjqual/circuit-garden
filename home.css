@@ -149,7 +149,8 @@ h1 {
 .word-preview,
 .jigsaw-preview,
 .tabletop-preview,
-.time-preview {
+.time-preview,
+.links-preview {
   grid-template-columns: repeat(2, 74px);
   gap: 10px;
 }
@@ -289,10 +290,38 @@ h1 {
 .time-preview em {
   grid-column: 1 / -1;
   min-height: 44px;
-  color: var(--mint);
+  color: var(--green);
   font-style: normal;
   font-weight: 950;
   letter-spacing: 0;
+}
+
+.links-preview {
+  align-content: center;
+  background:
+    radial-gradient(circle at 24% 24%, rgba(85, 214, 156, 0.2), transparent 15rem),
+    radial-gradient(circle at 76% 70%, rgba(255, 207, 86, 0.18), transparent 14rem),
+    linear-gradient(135deg, #1e2a31, #17232b);
+}
+
+.links-preview span {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(246, 241, 232, 0.14);
+  border-radius: 8px;
+  background: rgba(246, 241, 232, 0.08);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.links-preview span:nth-child(1),
+.links-preview span:nth-child(4) {
+  color: var(--green);
+}
+
+.links-preview span:nth-child(2) {
+  color: var(--gold);
 }
 
 .card-copy {
