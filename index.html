@@ -1,192 +1,191 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>记忆翻牌</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#12181f">
+    <title>Puzzle Arcade</title>
+    <link rel="stylesheet" href="home.css">
+  </head>
+  <body>
+    <main class="hub">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Dragon games</p>
+          <h1>龙龙游戏大厅</h1>
+        </div>
+      </header>
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #14213d;
-      color: #f7f1e3;
-      font-family: Arial, sans-serif;
-    }
+      <section class="games" aria-label="Game links">
+        <a class="game-card active" href="time/" aria-label="Open time and school countdown">
+          <div class="preview time-preview" aria-hidden="true">
+            <span>北京</span>
+            <strong id="homeBeijingTime">00:00</strong>
+            <span>美西</span>
+            <strong id="homeWestTime">00:00</strong>
+            <em id="homeSchoolDays">距离开学 -- 天</em>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Clock / 时钟</p>
+            <h2>时间与开学倒计时</h2>
+            <!-- <p>北京时间、美西时间、距离 8/13 开学的实时倒计时。</p> -->
+            <strong>Open/打开</strong>
+          </div>
+        </a>
 
-    main {
-      width: min(92vw, 640px);
-    }
+        <a class="game-card active" href="circuit-garden/" aria-label="Play Circuit Garden">
+          <div class="preview circuit-preview" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Playable / 可玩</p>
+            <h2>电路板</h2>
+            <strong>Play now/开始游戏</strong>
+          </div>
+        </a>
 
-    h1 {
-      margin: 0 0 12px;
-      font-size: 28px;
-    }
+        <a class="game-card active" href="number-game/" aria-label="Play Number Loom">
+          <div class="preview number-preview" aria-hidden="true">
+            <span>4</span>
+            <span>9</span>
+            <span>1</span>
+            <span>6</span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Playable / 可玩</p>
+            <h2>数字华容道</h2>
+            <strong>Play now/开始游戏</strong>
+          </div>
+        </a>
 
-    .status {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-      color: #d9e2ec;
-      font-size: 15px;
-    }
+        <a class="game-card active" href="jigsaw-20/" aria-label="Play 20 x 20 picture puzzle">
+          <div class="preview jigsaw-preview" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Playable / 可玩</p>
+            <h2>星河拼图</h2>
+            <!-- <p>Swap 400 picture pieces back into a complete drawing.</p> -->
+            <strong>Play now/开始游戏</strong>
+          </div>
+        </a>
 
-    .board {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-    }
+        <a class="game-card active" href="jigsaw-50/" aria-label="Play 50 piece tabletop jigsaw">
+          <div class="preview tabletop-preview" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Playable / 可玩</p>
+            <h2>桌面拼图</h2>
+            <!-- <p>Drag floating pieces into the center to complete the picture.</p> -->
+            <strong>Play now/开始游戏</strong>
+          </div>
+        </a>
 
-    button {
-      aspect-ratio: 1;
-      border: 2px solid #f7f1e3;
-      background: #274c77;
-      color: #f7f1e3;
-      font: 700 30px Arial, sans-serif;
-      cursor: pointer;
-    }
+        <a class="game-card active" href="utils/school/" aria-label="Open useful school links">
+          <div class="preview links-preview" aria-hidden="true">
+            <span>Speed</span>
+            <span>IP</span>
+            <span>School</span>
+            <span>Utils</span>
+          </div>
+          <div class="card-copy">
+            <p class="tag">Links / 链接</p>
+            <h2>常用链接</h2>
+            <strong>Open/打开</strong>
+          </div>
+        </a>
+      </section>
+    </main>
 
-    button:disabled {
-      cursor: default;
-    }
+    <script>
+      const homeClockFormatters = {
+        beijing: new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Shanghai",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          hourCycle: "h23"
+        }),
+        west: new Intl.DateTimeFormat("en-GB", {
+          timeZone: "America/Los_Angeles",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          hourCycle: "h23"
+        })
+      };
 
-    button.open,
-    button.matched {
-      background: #fca311;
-      color: #14213d;
-    }
-
-    p {
-      margin: 12px 0 0;
-      color: #d9e2ec;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>记忆翻牌</h1>
-    <div class="status" aria-live="polite">
-      <span id="moves">步数 0</span>
-      <span id="matches">配对 0/12</span>
-    </div>
-    <div id="board" class="board" aria-label="记忆翻牌棋盘"></div>
-    <p>每次翻开两张牌，找出所有配对。按空格重新开始。</p>
-  </main>
-
-  <script>
-    const board = document.getElementById("board");
-    const movesText = document.getElementById("moves");
-    const matchesText = document.getElementById("matches");
-    const symbols = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M"];
-    let cards = [];
-    let first = null;
-    let second = null;
-    let locked = false;
-    let moves = 0;
-    let matches = 0;
-
-    function shuffle(items) {
-      for (let index = items.length - 1; index > 0; index -= 1) {
-        const swap = Math.floor(Math.random() * (index + 1));
-        [items[index], items[swap]] = [items[swap], items[index]];
+      function homeZoneParts(date, timeZone) {
+        const parts = new Intl.DateTimeFormat("en-CA", {
+          timeZone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+          hourCycle: "h23"
+        }).formatToParts(date);
+        return Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, Number(part.value)]));
       }
 
-      return items;
-    }
-
-    function updateStatus() {
-      movesText.textContent = `步数 ${moves}`;
-      matchesText.textContent = `配对 ${matches}/${symbols.length}`;
-    }
-
-    function draw() {
-      board.innerHTML = "";
-
-      cards.forEach((card, index) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = card.open || card.matched ? card.symbol : "?";
-        button.className = card.matched ? "matched" : card.open ? "open" : "";
-        button.disabled = locked || card.open || card.matched;
-        button.setAttribute("aria-label", card.open || card.matched ? `牌 ${card.symbol}` : "隐藏的牌");
-        button.addEventListener("click", () => flip(index));
-        board.appendChild(button);
-      });
-    }
-
-    function closePair() {
-      cards[first].open = false;
-      cards[second].open = false;
-      first = null;
-      second = null;
-      locked = false;
-      draw();
-    }
-
-    function checkPair() {
-      moves += 1;
-
-      if (cards[first].symbol === cards[second].symbol) {
-        cards[first].matched = true;
-        cards[second].matched = true;
-        first = null;
-        second = null;
-        matches += 1;
-      } else {
-        locked = true;
-        setTimeout(closePair, 700);
+      function homeZonedDateTimeToInstant({ year, month, day, hour = 0, minute = 0, second = 0 }, timeZone) {
+        let instant = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+        for (let i = 0; i < 3; i += 1) {
+          const parts = homeZoneParts(instant, timeZone);
+          const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+          const wantedUtc = Date.UTC(year, month - 1, day, hour, minute, second);
+          instant = new Date(instant.getTime() + wantedUtc - asUtc);
+        }
+        return instant;
       }
 
-      updateStatus();
-      draw();
-    }
-
-    function flip(index) {
-      if (locked || cards[index].open || cards[index].matched) {
-        return;
+      function homeSchoolStart(now) {
+        const zone = "America/Los_Angeles";
+        const parts = homeZoneParts(now, zone);
+        let targetYear = parts.year;
+        let instant = homeZonedDateTimeToInstant({ year: targetYear, month: 8, day: 13 }, zone);
+        if (now >= instant) {
+          targetYear += 1;
+          instant = homeZonedDateTimeToInstant({ year: targetYear, month: 8, day: 13 }, zone);
+        }
+        return instant;
       }
 
-      cards[index].open = true;
-
-      if (first === null) {
-        first = index;
-      } else {
-        second = index;
-        checkPair();
+      function updateHomeClock() {
+        const now = new Date();
+        document.getElementById("homeBeijingTime").textContent = homeClockFormatters.beijing.format(now);
+        document.getElementById("homeWestTime").textContent = homeClockFormatters.west.format(now);
+        const schoolStart = homeSchoolStart(now);
+        const days = Math.max(0, Math.floor((schoolStart.getTime() - now.getTime()) / 86400000));
+        document.getElementById("homeSchoolDays").textContent = `距离开学 ${days} 天`;
       }
 
-      draw();
-    }
-
-    function restart() {
-      cards = shuffle([...symbols, ...symbols]).map((symbol) => ({
-        symbol,
-        open: false,
-        matched: false
-      }));
-      first = null;
-      second = null;
-      locked = false;
-      moves = 0;
-      matches = 0;
-      updateStatus();
-      draw();
-    }
-
-    window.addEventListener("keydown", (event) => {
-      if (event.key === " ") {
-        restart();
-      }
-    });
-
-    restart();
-  </script>
-</body>
+      updateHomeClock();
+      window.setInterval(updateHomeClock, 1000);
+    </script>
+  </body>
 </html>
