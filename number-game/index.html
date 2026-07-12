@@ -63,17 +63,25 @@
 
     .board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 8px;
     }
 
     .card {
+      width: 100%;
+      min-width: 0;
       aspect-ratio: 1;
       border: 2px solid #f7f1e3;
       background: #274c77;
       color: #f7f1e3;
       font: 700 30px Arial, sans-serif;
+      overflow: hidden;
       cursor: pointer;
+    }
+
+    .card.number-card {
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
     }
 
     .card:disabled {
@@ -118,7 +126,7 @@
     const setButtons = document.querySelectorAll(".set-button");
     const sets = {
       shapes: ["●", "■", "▲", "◆", "★", "✚", "⬟", "⬢", "○", "□", "△", "◇", "✦", "✖", "⬠", "⬡", "◐", "◧"],
-      chemistry: ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr"],
+      chemistry: ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf"],
       surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许", "邓", "冯", "韩", "曹", "曾", "彭", "萧", "蔡", "潘", "田"]
     };
     const pairCount = 18;
@@ -156,6 +164,10 @@
       const visible = card.open || card.matched;
       button.textContent = visible ? card.symbol : "?";
       button.className = `card${card.matched ? " matched" : card.open ? " open" : ""}`;
+
+      if (currentSet === "numbers") {
+        button.classList.add("number-card");
+      }
     }
 
     function draw() {
