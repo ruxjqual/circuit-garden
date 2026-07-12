@@ -118,10 +118,10 @@
     const setButtons = document.querySelectorAll(".set-button");
     const sets = {
       shapes: ["●", "■", "▲", "◆", "★", "✚", "⬟", "⬢", "○", "□", "△", "◇", "✦", "✖", "⬠", "⬡", "◐", "◧"],
-      chemistry: ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar"],
-      numbers: ["104", "217", "329", "438", "512", "607", "731", "846", "958", "163", "275", "384", "496", "520", "649", "753", "862", "971"],
-      surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林"]
+      chemistry: ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr"],
+      surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许", "邓", "冯", "韩", "曹", "曾", "彭", "萧", "蔡", "潘", "田"]
     };
+    const pairCount = 18;
     let cards = [];
     let first = null;
     let second = null;
@@ -141,7 +141,7 @@
 
     function updateStatus() {
       movesText.textContent = `步数 ${moves}`;
-      matchesText.textContent = `配对 ${matches}/${sets[currentSet].length}`;
+      matchesText.textContent = `配对 ${matches}/${pairCount}`;
     }
 
     function updateSetButtons() {
@@ -216,8 +216,34 @@
       draw();
     }
 
+    function makeNumbers() {
+      const numbers = new Set();
+
+      while (numbers.size < pairCount) {
+        numbers.add(String(Math.floor(Math.random() * 900) + 100));
+      }
+
+      return [...numbers];
+    }
+
+    function sample(items) {
+      return shuffle([...items]).slice(0, pairCount);
+    }
+
+    function getSymbols() {
+      if (currentSet === "numbers") {
+        return makeNumbers();
+      }
+
+      if (currentSet === "chemistry" || currentSet === "surnames") {
+        return sample(sets[currentSet]);
+      }
+
+      return sets[currentSet];
+    }
+
     function restart() {
-      const symbols = sets[currentSet];
+      const symbols = getSymbols();
       cards = shuffle([...symbols, ...symbols]).map((symbol) => ({
         symbol,
         open: false,
