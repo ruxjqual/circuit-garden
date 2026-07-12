@@ -37,13 +37,37 @@
       font-size: 15px;
     }
 
+    .controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: #d9e2ec;
+      font-size: 15px;
+    }
+
+    .set-button {
+      border: 2px solid #f7f1e3;
+      background: #274c77;
+      color: #f7f1e3;
+      padding: 6px 10px;
+      font: 700 15px Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .set-button.active {
+      background: #fca311;
+      color: #14213d;
+    }
+
     .board {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 8px;
     }
 
-    button {
+    .card {
       aspect-ratio: 1;
       border: 2px solid #f7f1e3;
       background: #274c77;
@@ -52,14 +76,18 @@
       cursor: pointer;
     }
 
-    button:disabled {
+    .card:disabled {
       cursor: default;
     }
 
-    button.open,
-    button.matched {
+    .card.open,
+    .card.matched {
       background: #fca311;
       color: #14213d;
+    }
+
+    .card.color-card {
+      color: transparent;
     }
 
     p {
@@ -76,6 +104,13 @@
       <span id="moves">步数 0</span>
       <span id="matches">配对 0/18</span>
     </div>
+    <div class="controls">
+      <span>卡牌类型</span>
+      <button class="set-button" type="button" data-set="shapes">形状</button>
+      <button class="set-button" type="button" data-set="colors">颜色</button>
+      <button class="set-button" type="button" data-set="letters">字母</button>
+      <button class="set-button active" type="button" data-set="surnames" aria-pressed="true">姓氏</button>
+    </div>
     <div id="board" class="board" aria-label="记忆翻牌棋盘"></div>
     <p>每次翻开两张牌，找出所有配对。按空格重新开始。</p>
   </main>
@@ -84,13 +119,20 @@
     const board = document.getElementById("board");
     const movesText = document.getElementById("moves");
     const matchesText = document.getElementById("matches");
-    const symbols = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T"];
+    const setButtons = document.querySelectorAll(".set-button");
+    const sets = {
+      shapes: ["●", "■", "▲", "◆", "★", "✚", "⬟", "⬢", "○", "□", "△", "◇", "✦", "✖", "⬠", "⬡", "◐", "◧"],
+      colors: ["#e63946", "#f77f00", "#fcbf49", "#2a9d8f", "#0077b6", "#4361ee", "#7209b7", "#b5179e", "#06d6a0", "#118ab2", "#ef476f", "#ffd166", "#8ac926", "#1982c4", "#6a4c93", "#ff595e", "#9b5de5", "#00bbf9"],
+      letters: ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T"],
+      surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林"]
+    };
     let cards = [];
     let first = null;
     let second = null;
     let locked = false;
     let moves = 0;
     let matches = 0;
+    let currentSet = "surnames";
 
     function shuffle(items) {
       for (let index = items.length - 1; index > 0; index -= 1) {
@@ -103,7 +145,27 @@
 
     function updateStatus() {
       movesText.textContent = `步数 ${moves}`;
-      matchesText.textContent = `配对 ${matches}/${symbols.length}`;
+      matchesText.textContent = `配对 ${matches}/${sets[currentSet].length}`;
+    }
+
+    function updateSetButtons() {
+      setButtons.forEach((button) => {
+        const active = button.dataset.set === currentSet;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    function showCard(button, card) {
+      const visible = card.open || card.matched;
+      button.textContent = visible && currentSet !== "colors" ? card.symbol : "?";
+      button.className = `card${card.matched ? " matched" : card.open ? " open" : ""}`;
+
+      if (visible && currentSet === "colors") {
+        button.textContent = "";
+        button.classList.add("color-card");
+        button.style.background = card.symbol;
+      }
     }
 
     function draw() {
@@ -112,10 +174,9 @@
       cards.forEach((card, index) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = card.open || card.matched ? card.symbol : "?";
-        button.className = card.matched ? "matched" : card.open ? "open" : "";
+        showCard(button, card);
         button.disabled = locked || card.open || card.matched;
-        button.setAttribute("aria-label", card.open || card.matched ? `牌 ${card.symbol}` : "隐藏的牌");
+        button.setAttribute("aria-label", card.open || card.matched ? "已翻开的牌" : "隐藏的牌");
         button.addEventListener("click", () => flip(index));
         board.appendChild(button);
       });
@@ -166,6 +227,7 @@
     }
 
     function restart() {
+      const symbols = sets[currentSet];
       cards = shuffle([...symbols, ...symbols]).map((symbol) => ({
         symbol,
         open: false,
@@ -176,6 +238,7 @@
       locked = false;
       moves = 0;
       matches = 0;
+      updateSetButtons();
       updateStatus();
       draw();
     }
@@ -184,6 +247,13 @@
       if (event.key === " ") {
         restart();
       }
+    });
+
+    setButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        currentSet = button.dataset.set;
+        restart();
+      });
     });
 
     restart();
