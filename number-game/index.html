@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>15 Puzzle</title>
+  <title>记忆翻牌</title>
   <style>
     * {
       box-sizing: border-box;
@@ -14,30 +14,13 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background: #17212b;
-      color: #f6f1e7;
+      background: #14213d;
+      color: #f7f1e3;
       font-family: Arial, sans-serif;
     }
 
     main {
-      width: min(92vw, 420px);
-    }
-
-    .home {
-      min-height: 38px;
-      display: inline-grid;
-      place-items: center;
-      margin-bottom: 14px;
-      border: 1px solid rgba(246, 241, 231, 0.22);
-      padding: 0 12px;
-      background: rgba(246, 241, 231, 0.08);
-      color: #f6f1e7;
-      font-weight: 700;
-      text-decoration: none;
-    }
-
-    .home:hover {
-      background: rgba(246, 241, 231, 0.16);
+      width: min(92vw, 520px);
     }
 
     h1 {
@@ -45,148 +28,165 @@
       font-size: 28px;
     }
 
-    .bar {
+    .status {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       gap: 12px;
       margin-bottom: 12px;
-      font-size: 14px;
-    }
-
-    button {
-      border: 0;
-      padding: 8px 12px;
-      background: #f6f1e7;
-      color: #17212b;
-      font: inherit;
-      cursor: pointer;
+      color: #d9e2ec;
+      font-size: 15px;
     }
 
     .board {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      aspect-ratio: 1;
-      padding: 6px;
-      background: #0d1319;
-      border: 2px solid #f6f1e7;
+      gap: 10px;
     }
 
-    .tile {
-      border: 0;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      background: #d95d39;
-      color: #fffaf0;
-      font-size: 28px;
-      font-weight: 700;
+    button {
+      aspect-ratio: 1;
+      border: 2px solid #f7f1e3;
+      background: #274c77;
+      color: #f7f1e3;
+      font: 700 34px Arial, sans-serif;
       cursor: pointer;
     }
 
-    .empty {
-      background: transparent;
+    button:disabled {
       cursor: default;
     }
 
+    button.open,
+    button.matched {
+      background: #fca311;
+      color: #14213d;
+    }
+
     p {
-      min-height: 20px;
       margin: 12px 0 0;
-      color: #cfd8dc;
+      color: #d9e2ec;
       font-size: 14px;
     }
   </style>
 </head>
 <body>
   <main>
-    <a class="home" href="../" aria-label="Home / 回大厅">Home / 回大厅</a>
-    <h1>15 Puzzle</h1>
-    <div class="bar">
-      <span id="moves">Moves: 0</span>
-      <button id="shuffle" type="button">Shuffle</button>
+    <h1>记忆翻牌</h1>
+    <div class="status" aria-live="polite">
+      <span id="moves">步数 0</span>
+      <span id="matches">配对 0/8</span>
     </div>
-    <div id="board" class="board" aria-label="15 Puzzle board"></div>
-    <p id="message">Slide tiles into order from 1 to 15.</p>
+    <div id="board" class="board" aria-label="记忆翻牌棋盘"></div>
+    <p>每次翻开两张牌，找出所有配对。按空格重新开始。</p>
   </main>
 
   <script>
     const board = document.getElementById("board");
     const movesText = document.getElementById("moves");
-    const message = document.getElementById("message");
-    const shuffleButton = document.getElementById("shuffle");
-    const size = 4;
-    const solved = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0];
-    let tiles = [...solved];
+    const matchesText = document.getElementById("matches");
+    const symbols = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    let cards = [];
+    let first = null;
+    let second = null;
+    let locked = false;
     let moves = 0;
+    let matches = 0;
 
-    function indexToPoint(index) {
-      return { x: index % size, y: Math.floor(index / size) };
+    function shuffle(items) {
+      for (let index = items.length - 1; index > 0; index -= 1) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [items[index], items[swap]] = [items[swap], items[index]];
+      }
+
+      return items;
     }
 
-    function canMove(index) {
-      const empty = tiles.indexOf(0);
-      const a = indexToPoint(index);
-      const b = indexToPoint(empty);
-      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
-    }
-
-    function isSolved() {
-      return tiles.every((tile, index) => tile === solved[index]);
+    function updateStatus() {
+      movesText.textContent = `步数 ${moves}`;
+      matchesText.textContent = `配对 ${matches}/${symbols.length}`;
     }
 
     function draw() {
       board.innerHTML = "";
 
-      tiles.forEach((tile, index) => {
-        const square = document.createElement("button");
-        square.type = "button";
-        square.className = tile === 0 ? "tile empty" : "tile";
-        square.textContent = tile || "";
-        square.setAttribute("aria-label", tile === 0 ? "empty square" : `tile ${tile}`);
-        square.disabled = tile === 0;
-        square.addEventListener("click", () => move(index));
-        board.appendChild(square);
+      cards.forEach((card, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = card.open || card.matched ? card.symbol : "?";
+        button.className = card.matched ? "matched" : card.open ? "open" : "";
+        button.disabled = locked || card.open || card.matched;
+        button.setAttribute("aria-label", card.open || card.matched ? `牌 ${card.symbol}` : "隐藏的牌");
+        button.addEventListener("click", () => flip(index));
+        board.appendChild(button);
       });
-
-      movesText.textContent = `Moves: ${moves}`;
-      message.textContent = isSolved() ? "Solved. Press Shuffle to play again." : "Slide tiles into order from 1 to 15.";
     }
 
-    function move(index) {
-      if (!canMove(index) || isSolved()) {
-        return;
-      }
+    function closePair() {
+      cards[first].open = false;
+      cards[second].open = false;
+      first = null;
+      second = null;
+      locked = false;
+      draw();
+    }
 
-      const empty = tiles.indexOf(0);
-      [tiles[index], tiles[empty]] = [tiles[empty], tiles[index]];
+    function checkPair() {
       moves += 1;
+
+      if (cards[first].symbol === cards[second].symbol) {
+        cards[first].matched = true;
+        cards[second].matched = true;
+        first = null;
+        second = null;
+        matches += 1;
+      } else {
+        locked = true;
+        setTimeout(closePair, 700);
+      }
+
+      updateStatus();
       draw();
     }
 
-    function shuffle() {
-      tiles = [...solved];
-      moves = 0;
-
-      for (let step = 0; step < 180; step += 1) {
-        const empty = tiles.indexOf(0);
-        const choices = tiles
-          .map((tile, index) => ({ tile, index }))
-          .filter(({ tile, index }) => tile !== 0 && canMove(index));
-        const next = choices[Math.floor(Math.random() * choices.length)].index;
-        [tiles[next], tiles[empty]] = [tiles[empty], tiles[next]];
-      }
-
-      if (isSolved()) {
-        shuffle();
+    function flip(index) {
+      if (locked || cards[index].open || cards[index].matched) {
         return;
       }
 
+      cards[index].open = true;
+
+      if (first === null) {
+        first = index;
+      } else {
+        second = index;
+        checkPair();
+      }
+
       draw();
     }
 
-    shuffleButton.addEventListener("click", shuffle);
-    shuffle();
+    function restart() {
+      cards = shuffle([...symbols, ...symbols]).map((symbol) => ({
+        symbol,
+        open: false,
+        matched: false
+      }));
+      first = null;
+      second = null;
+      locked = false;
+      moves = 0;
+      matches = 0;
+      updateStatus();
+      draw();
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === " ") {
+        restart();
+      }
+    });
+
+    restart();
   </script>
 </body>
 </html>
