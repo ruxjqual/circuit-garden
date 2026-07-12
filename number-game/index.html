@@ -20,7 +20,7 @@
     }
 
     main {
-      width: min(92vw, 520px);
+      width: min(92vw, 640px);
     }
 
     h1 {
@@ -39,8 +39,8 @@
 
     .board {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
     }
 
     button {
@@ -48,7 +48,7 @@
       border: 2px solid #f7f1e3;
       background: #274c77;
       color: #f7f1e3;
-      font: 700 34px Arial, sans-serif;
+      font: 700 30px Arial, sans-serif;
       cursor: pointer;
     }
 
@@ -74,7 +74,7 @@
     <h1>记忆翻牌</h1>
     <div class="status" aria-live="polite">
       <span id="moves">步数 0</span>
-      <span id="matches">配对 0/8</span>
+      <span id="matches">配对 0/18</span>
     </div>
     <div id="board" class="board" aria-label="记忆翻牌棋盘"></div>
     <p>每次翻开两张牌，找出所有配对。按空格重新开始。</p>
@@ -84,7 +84,7 @@
     const board = document.getElementById("board");
     const movesText = document.getElementById("moves");
     const matchesText = document.getElementById("matches");
-    const symbols = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const symbols = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T"];
     let cards = [];
     let first = null;
     let second = null;
@@ -141,7 +141,7 @@
         matches += 1;
       } else {
         locked = true;
-        setTimeout(closePair, 700);
+        setTimeout(closePair, 500);
       }
 
       updateStatus();
