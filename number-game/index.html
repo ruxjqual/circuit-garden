@@ -84,6 +84,75 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .card.emoji-card {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .card.sock-card {
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .sock-thumb {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .sock-icon {
+      position: relative;
+      display: block;
+      width: 34%;
+      height: 58%;
+      border: 3px solid #14213d;
+      border-top-width: 8px;
+      border-radius: 4px 4px 10px 10px;
+      background: var(--sock-color);
+      transform: rotate(-12deg);
+    }
+
+    .sock-icon::after {
+      content: "";
+      position: absolute;
+      right: -44%;
+      bottom: -3px;
+      width: 70%;
+      height: 34%;
+      border: 3px solid #14213d;
+      border-left: 0;
+      border-radius: 0 12px 12px 0;
+      background: inherit;
+    }
+
+    .sock-icon.stripe {
+      background:
+        linear-gradient(
+          to bottom,
+          var(--sock-color) 0 26%,
+          #f7f1e3 26% 38%,
+          var(--sock-color) 38% 62%,
+          #f7f1e3 62% 74%,
+          var(--sock-color) 74% 100%
+        );
+    }
+
+    .sock-icon.dot {
+      background:
+        radial-gradient(circle, #f7f1e3 0 18%, transparent 20%) 0 0 / 14px 14px,
+        var(--sock-color);
+    }
+
+    .sock-icon.cuff {
+      border-top-color: #f7f1e3;
+    }
+
+    .sock-icon.toe {
+      box-shadow: inset 0 -12px 0 #f7f1e3;
+    }
+
     .card:disabled {
       cursor: default;
     }
@@ -92,6 +161,11 @@
     .card.matched {
       background: #fca311;
       color: #14213d;
+    }
+
+    .card.open.sock-card,
+    .card.matched.sock-card {
+      background: #f7f1e3;
     }
 
     p {
@@ -114,6 +188,9 @@
       <button class="set-button" type="button" data-set="chemistry">化学</button>
       <button class="set-button" type="button" data-set="numbers">数字</button>
       <button class="set-button active" type="button" data-set="surnames" aria-pressed="true">姓氏</button>
+      <button class="set-button" type="button" data-set="socks1">袜子1</button>
+      <button class="set-button" type="button" data-set="socks2">袜子2</button>
+      <button class="set-button" type="button" data-set="faces">表情</button>
     </div>
     <div id="board" class="board" aria-label="记忆翻牌棋盘"></div>
     <p>每次翻开两张牌，找出所有配对。按空格重新开始。</p>
@@ -127,7 +204,10 @@
     const sets = {
       shapes: ["●", "■", "▲", "◆", "★", "✚", "⬟", "⬢", "○", "□", "△", "◇", "✦", "✖", "⬠", "⬡", "◐", "◧"],
       chemistry: ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf"],
-      surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许", "邓", "冯", "韩", "曹", "曾", "彭", "萧", "蔡", "潘", "田"]
+      surnames: ["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "吴", "周", "徐", "孙", "马", "朱", "胡", "郭", "何", "林", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许", "邓", "冯", "韩", "曹", "曾", "彭", "萧", "蔡", "潘", "田"],
+      socks1: ["assets/sock-photo-01-r0.jpg", "assets/sock-photo-01-r90.jpg", "assets/sock-photo-01-r180.jpg", "assets/sock-photo-01-r270.jpg", "assets/sock-photo-02-r0.jpg", "assets/sock-photo-02-r90.jpg", "assets/sock-photo-02-r180.jpg", "assets/sock-photo-02-r270.jpg", "assets/sock-photo-03-r0.jpg", "assets/sock-photo-03-r90.jpg", "assets/sock-photo-03-r180.jpg", "assets/sock-photo-03-r270.jpg", "assets/sock-photo-04-r0.jpg", "assets/sock-photo-04-r90.jpg", "assets/sock-photo-04-r180.jpg", "assets/sock-photo-04-r270.jpg", "assets/sock-photo-05-r0.jpg", "assets/sock-photo-05-r90.jpg", "assets/sock-photo-05-r180.jpg", "assets/sock-photo-05-r270.jpg", "assets/sock-photo-06-r0.jpg", "assets/sock-photo-06-r90.jpg", "assets/sock-photo-06-r180.jpg", "assets/sock-photo-06-r270.jpg"],
+      socks2: ["#e63946|solid", "#4361ee|solid", "#2a9d8f|solid", "#f77f00|solid", "#6c757d|solid", "#9b5de5|solid", "#ef476f|solid", "#118ab2|solid", "#e63946|stripe", "#4361ee|stripe", "#2a9d8f|stripe", "#f77f00|stripe", "#6c757d|stripe", "#9b5de5|stripe", "#ef476f|stripe", "#118ab2|stripe", "#e63946|dot", "#4361ee|dot", "#2a9d8f|dot", "#f77f00|dot", "#6c757d|dot", "#9b5de5|dot", "#ef476f|dot", "#118ab2|dot", "#e63946|cuff", "#4361ee|cuff", "#2a9d8f|cuff", "#f77f00|cuff", "#6c757d|cuff", "#9b5de5|cuff", "#ef476f|cuff", "#118ab2|cuff", "#e63946|toe", "#4361ee|toe", "#2a9d8f|toe", "#f77f00|toe"],
+      faces: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🙂", "🙃", "😉", "😊", "😇", "😍", "😘", "😜", "🤪", "🤔", "🤨", "😐", "😑", "😴", "😬", "😮", "😱", "😎", "🥳", "😡", "😭", "🤯", "🤠", "🤖", "👻", "💀", "👽", "🤡", "🥶"]
     };
     const pairCount = 18;
     let cards = [];
@@ -168,6 +248,30 @@
       if (currentSet === "numbers") {
         button.classList.add("number-card");
       }
+
+      if (currentSet === "faces") {
+        button.classList.add("emoji-card");
+      }
+
+      if (visible && currentSet === "socks1") {
+        const image = document.createElement("img");
+        button.textContent = "";
+        button.classList.add("sock-card");
+        image.className = "sock-thumb";
+        image.src = card.symbol;
+        image.alt = "";
+        button.appendChild(image);
+      }
+
+      if (visible && currentSet === "socks2") {
+        const [color, pattern] = card.symbol.split("|");
+        const icon = document.createElement("span");
+        button.textContent = "";
+        button.classList.add("sock-card");
+        icon.className = `sock-icon ${pattern}`;
+        icon.style.setProperty("--sock-color", color);
+        button.appendChild(icon);
+      }
     }
 
     function draw() {
@@ -178,7 +282,7 @@
         button.type = "button";
         showCard(button, card);
         button.disabled = locked || card.open || card.matched;
-        button.setAttribute("aria-label", card.open || card.matched ? "已翻开的牌" : "隐藏的牌");
+        button.setAttribute("aria-label", card.open || card.matched ? (currentSet === "socks1" || currentSet === "socks2" ? "袜子图案" : "已翻开的牌") : "隐藏的牌");
         button.addEventListener("click", () => flip(index));
         board.appendChild(button);
       });
@@ -247,7 +351,7 @@
         return makeNumbers();
       }
 
-      if (currentSet === "chemistry" || currentSet === "surnames") {
+      if (currentSet === "chemistry" || currentSet === "surnames" || currentSet === "socks1" || currentSet === "socks2" || currentSet === "faces") {
         return sample(sets[currentSet]);
       }
 
